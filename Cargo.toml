@@ -1,0 +1,38 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/core",
+    "crates/cli",
+    "crates/corpus",
+    "crates/docs",
+    "crates/tools",
+    "crates/server",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/geofflittle/aiken-mcp"
+
+[workspace.dependencies]
+aiken-mcp-core = { path = "crates/core", version = "0.1.0" }
+aiken-mcp-cli = { path = "crates/cli", version = "0.1.0" }
+aiken-mcp-corpus = { path = "crates/corpus", version = "0.1.0" }
+aiken-mcp-docs = { path = "crates/docs", version = "0.1.0" }
+aiken-mcp-tools = { path = "crates/tools", version = "0.1.0" }
+
+anyhow = "1"
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"

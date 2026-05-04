@@ -1,0 +1,18 @@
+[package]
+name = "aiken-mcp-docs"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Aiken docs fetcher with disk cache for aiken-mcp"
+
+[dependencies]
+aiken-mcp-core.workspace = true
+async-trait.workspace = true
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+serde.workspace = true
+sha2 = "0.10"
+thiserror.workspace = true
+tokio = { workspace = true, features = ["fs", "io-util", "macros", "rt-multi-thread"] }
+tracing.workspace = true

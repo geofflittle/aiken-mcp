@@ -1,0 +1,17 @@
+[package]
+name = "aiken-mcp-corpus"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Reference corpus search for aiken-mcp"
+
+[dependencies]
+aiken-mcp-core.workspace = true
+async-trait.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["process", "io-util", "macros", "rt-multi-thread", "fs"] }
+tracing.workspace = true
