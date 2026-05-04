@@ -1,0 +1,84 @@
+# Curated list of Aiken codebases by high-expertise authors.
+#
+# Add an entry per repo. Fields:
+#   name:        slug used as directory name when sync-corpus.sh clones
+#   url:         git URL (https or ssh)
+#   author:      individual or org maintaining the repo
+#   tags:        topics; useful for `aiken_corpus_list` filtering
+#   description: one-liner
+#   notes:       (optional) what to study, what's interesting, gotchas
+#
+# Sync via `scripts/sync-corpus.sh /path/to/dir`. Then
+# `AIKEN_MCP_CORPUS=/path/to/dir/aiken-stdlib:/path/to/dir/midnight-reserve-contracts:...`
+
+[[entries]]
+name = "aiken-stdlib"
+url = "https://github.com/aiken-lang/stdlib.git"
+author = "aiken-lang"
+tags = ["stdlib", "primitives"]
+description = "Official Aiken standard library."
+notes = "Canonical reference for idiomatic Aiken. Read first."
+
+[[entries]]
+name = "aiken-design-patterns"
+url = "https://github.com/aiken-lang/design-patterns.git"
+author = "aiken-lang"
+tags = ["patterns", "validators", "examples"]
+description = "Curated design patterns by the Aiken core team."
+notes = "Treat as canonical for validator patterns. Updated alongside compiler."
+
+[[entries]]
+name = "midnight-reserve-contracts"
+url = "https://github.com/midnightntwrk/midnight-reserve-contracts.git"
+author = "Kasey/microproofs"
+tags = ["beefy", "mmr", "merkle", "bridge", "audited"]
+description = "Cardano-side BEEFY authority tracker for Midnight. TxPipe-audited."
+notes = "Reference impl of multi-member Merkle proofs, MMR walks, BEEFY signature verify, two-stage upgradable contracts. Highest-quality bridge primitives in Aiken."
+
+[[entries]]
+name = "fortuna"
+url = "https://github.com/cardano-foundation/fortuna.git"
+author = "microproofs"
+tags = ["mining", "pow", "validator"]
+description = "PoW-style minting validator (TUNA). Established Cardano onchain randomness source."
+notes = "Worth studying for tight exec-budget code paths."
+
+[[entries]]
+name = "sundae-protocol"
+url = "https://github.com/SundaeSwap-finance/sundae-contracts.git"
+author = "SundaeSwap-finance"
+tags = ["dex", "amm", "pool", "production"]
+description = "Production DEX validators (SundaeSwap V3)."
+notes = "Mature production AMM in Aiken. Read for batched-order patterns + datum design."
+
+[[entries]]
+name = "amaru"
+url = "https://github.com/pragma-org/amaru.git"
+author = "TxPipe / pragma-org"
+tags = ["node", "ledger", "rust"]
+description = "Cardano node rewrite. Not Aiken itself, but governs ledger rules Aiken validators interact with."
+notes = "Read for ledger-rule context. Skip for Aiken-only patterns."
+
+[[entries]]
+name = "anastasia-labs-aiken"
+url = "https://github.com/Anastasia-Labs/aiken-design-patterns.git"
+author = "Anastasia Labs"
+tags = ["patterns", "linked-list", "merkle", "validators"]
+description = "Production Aiken design patterns (linked lists, merkle trees, multi-stake-validators)."
+notes = "Read alongside aiken-lang/design-patterns; complementary."
+
+[[entries]]
+name = "splash"
+url = "https://github.com/spectrum-finance/cardano-dex-aiken.git"
+author = "Spectrum Finance"
+tags = ["dex", "amm", "production"]
+description = "Aiken-rewrite of Spectrum DEX validators."
+notes = "Alternative AMM design point. Compare with Sundae."
+
+[[entries]]
+name = "polytope-merkle-trees"
+url = "https://github.com/polytope-labs/solidity-merkle-trees.git"
+author = "Polytope Labs"
+tags = ["merkle", "patricia", "trie", "substrate", "reference"]
+description = "Solidity reference impl of Substrate Merkle Patricia trie verifier."
+notes = "Not Aiken — Solidity. Listed because it's the canonical port target for Aiken Patricia trie verifier (no native Aiken impl exists)."

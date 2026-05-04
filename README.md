@@ -15,6 +15,17 @@ Aiken code with tight feedback.
 | `aiken_pattern_search` | Ripgrep over user-supplied reference Aiken codebases. |
 | `aiken_docs` | Fetch a page from `aiken-lang.org` with on-disk cache. |
 | `aiken_version` | Report the installed Aiken CLI version. |
+| `aiken_hover` | LSP hover at file/line/column via `aiken lsp --stdio`. |
+| `aiken_completions` | LSP completions. |
+| `aiken_definition` | LSP go-to-definition. |
+| `aiken_budget` | Per-test mem/cpu vs Plutus tx limit (%). |
+| `aiken_symbol_lookup` | Index `pub fn`/`pub type`/`pub const`/`validator` across the corpus. |
+| `aiken_blueprint` | Parse `plutus.json` (CIP-57): validators, hashes, schemas, sizes. |
+| `aiken_uplc` | `aiken uplc decode <target>`. |
+| `aiken_new` | `aiken new` scaffolder. |
+| `aiken_explain` | Static error → fix lookup. |
+| `aiken_corpus_list` | List curated high-expertise Aiken codebases (from `corpora.toml`). |
+| `aiken_pattern_catalog` | Curated pattern catalog with refs into corpus (`patterns.toml`). |
 
 ## Architecture
 
@@ -79,6 +90,25 @@ Or hand-edit `~/.claude.json`:
 
 Project scope: drop a `.mcp.json` at the project root with the same shape
 (overrides user scope when both exist).
+
+## Curated corpus + patterns
+
+`crates/tools/data/corpora.toml` is a hand-curated list of high-expertise
+Aiken codebases (aiken-lang, microproofs, Anastasia Labs, SundaeSwap,
+Spectrum, etc.). `crates/tools/data/patterns.toml` is a hand-curated catalog
+of named patterns (two-stage upgrade, BEEFY consensus verify, merkle
+multi-member, linked-list, etc.) with refs into the corpus.
+
+The MCP exposes these via `aiken_corpus_list` (filterable by tag) and
+`aiken_pattern_catalog` (lookup by name or fuzzy query).
+
+To clone everything in the manifest:
+
+```sh
+scripts/sync-corpus.sh ~/code/aiken-corpus
+```
+
+Add new repos / patterns by editing the TOML files and rebuilding the server.
 
 ## Configuration (env vars)
 

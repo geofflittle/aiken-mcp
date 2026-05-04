@@ -127,6 +127,25 @@ pub struct ExplainArgs {
     pub error: String,
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CorpusListArgs {
+    /// Optional case-insensitive tag filter.
+    #[serde(default)]
+    pub tag: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct PatternCatalogArgs {
+    /// Exact pattern slug. Mutually exclusive with `query`.
+    #[serde(default)]
+    pub name: Option<String>,
+    /// Fuzzy query against name/title/description/keywords.
+    #[serde(default)]
+    pub query: Option<String>,
+    #[serde(default = "default_max_hits")]
+    pub max_hits: usize,
+}
+
 impl From<CheckArgs> for tools::CheckRequest {
     fn from(a: CheckArgs) -> Self {
         Self { path: a.path, module: a.module }
@@ -200,6 +219,16 @@ impl From<NewProjectArgs> for tools::NewProjectRequest {
 impl From<ExplainArgs> for tools::ExplainRequest {
     fn from(a: ExplainArgs) -> Self {
         Self { error: a.error }
+    }
+}
+impl From<CorpusListArgs> for tools::CorpusListRequest {
+    fn from(a: CorpusListArgs) -> Self {
+        Self { tag: a.tag }
+    }
+}
+impl From<PatternCatalogArgs> for tools::PatternCatalogRequest {
+    fn from(a: PatternCatalogArgs) -> Self {
+        Self { name: a.name, query: a.query, max_hits: a.max_hits }
     }
 }
 
@@ -290,6 +319,16 @@ impl AikenMcpServer {
     #[tool(description = "Look up a canonical explanation + fix for a common Aiken error string.")]
     async fn aiken_explain(&self, Parameters(args): Parameters<ExplainArgs>) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_explain(args.into()).await)
+    }
+
+    #[tool(description = "List curated high-expertise Aiken codebases. Optional tag filter (e.g. `dex`, `bridge`, `merkle`, `patterns`). Returns repo url + author + tags + study notes.")]
+    async fn aiken_corpus_list(&self, Parameters(args): Parameters<CorpusListArgs>) -> Result<CallToolResult, McpError> {
+        json_call(tools::handle_corpus_list(args.into()).await)
+    }
+
+    #[tool(description = "Look up curated Aiken patterns (e.g. two-stage-upgrade, merkle-multi-member-proof, beefy-consensus-verify). Pass `name` for exact slug or `query` for fuzzy match. Each result has refs into the corpus.")]
+    async fn aiken_pattern_catalog(&self, Parameters(args): Parameters<PatternCatalogArgs>) -> Result<CallToolResult, McpError> {
+        json_call(tools::handle_pattern_catalog(args.into()).await)
     }
 }
 

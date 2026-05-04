@@ -1,0 +1,121 @@
+# Curated catalog of named Aiken patterns.
+#
+# Entries point at canonical implementations in the corpus. AI consumers can
+# search by name/keyword and follow refs into the corpus to study the actual
+# code. This file is hand-edited; add entries as new patterns surface.
+#
+# Each entry:
+#   name:         short slug
+#   title:        human-readable name
+#   description:  what the pattern is + when to use it
+#   keywords:     for fuzzy match
+#   refs:         array of { repo, path, lines, author, note }
+#   gotchas:      (optional) common mistakes
+#   alternatives: (optional) related patterns to consider
+
+[[patterns]]
+name = "two-stage-upgrade"
+title = "Two-stage upgradable contract"
+description = "Upgrade flow split into announce + activate phases with a mandatory delay. Prevents instant validator swap by a compromised key."
+keywords = ["upgrade", "governance", "security", "timelock"]
+refs = [
+  { repo = "midnight-reserve-contracts", path = "lib/upgradable/two_stage_upgrade.ak", author = "microproofs", note = "Canonical impl. Used across reserve-contracts validators." },
+  { repo = "midnight-reserve-contracts", path = "validators/committee_bridge.ak", lines = "27-44", author = "microproofs", note = "Real-world wiring at validator boundary." }
+]
+gotchas = "Stage delay must be enforced on-chain via slot/time check. Off-chain enforcement = bypass risk."
+alternatives = "permissioned (single-stage), gov_auth (multi-key)"
+
+[[patterns]]
+name = "forever-mint"
+title = "One-shot forever-mint NFT"
+description = "Mint exactly one token at deploy time, gated by a one-shot UTxO ref. After mint, the validator continues to govern subsequent updates to that token's state."
+keywords = ["nft", "one-shot", "mint", "deploy"]
+refs = [
+  { repo = "midnight-reserve-contracts", path = "lib/forever/script.ak", author = "microproofs", note = "Library impl of forever_contract pattern." },
+  { repo = "midnight-reserve-contracts", path = "validators/committee_bridge.ak", lines = "11-25", author = "microproofs", note = "Concrete wiring with BEEFY consensus state." }
+]
+gotchas = "One-shot ref must be unique to deployment tx. Reusing across deploys = mint replay."
+
+[[patterns]]
+name = "merkle-multi-member-proof"
+title = "Multi-member Merkle proof verification"
+description = "Verify membership of multiple leaves under one Merkle root in a single proof. Cheaper than N separate proofs when you need to attest several elements."
+keywords = ["merkle", "proof", "multi", "batch", "validator-set"]
+refs = [
+  { repo = "midnight-reserve-contracts", path = "lib/bridge/merkle.ak", author = "microproofs", note = "verify_merkle_multi_proof_get_leaves." },
+  { repo = "midnight-reserve-contracts", path = "merkle_multi_member.md", author = "microproofs", note = "Spec/diagram of expected tree+proof shape." }
+]
+gotchas = "Proof structure encodes branches as nested lists; depth-first traversal required. Order of leaves in proof must match tree shape."
+
+[[patterns]]
+name = "beefy-consensus-verify"
+title = "BEEFY consensus signature verification (Substrate)"
+description = "Verify a Substrate BEEFY signed commitment on Cardano. Cross-checks signature stake threshold, MMR root, and authority-set ID."
+keywords = ["beefy", "substrate", "bridge", "consensus", "ecdsa"]
+refs = [
+  { repo = "midnight-reserve-contracts", path = "lib/bridge/beefy.ak", author = "microproofs", note = "verify_consensus + check_auth_sigs_and_get_stake." },
+  { repo = "midnight-reserve-contracts", path = "lib/bridge/codec.ak", author = "microproofs", note = "SCALE encoding for BEEFY structs." },
+  { repo = "midnight-reserve-contracts", path = "lib/bridge/types.ak", author = "microproofs", note = "Type model: Commitment, BeefyMmrLeaf, AuthoritySetCommitment." }
+]
+gotchas = "Authority set rotates per-session; verifier must cross-reference current vs next via committee_bridge NFT. Validator set sampling weakens security if too aggressive."
+
+[[patterns]]
+name = "mmr-inclusion-proof"
+title = "MMR (Merkle Mountain Range) inclusion proof"
+description = "Prove inclusion of a leaf at position p in an MMR with root R. Used by BEEFY to anchor block summaries cheaply across chains."
+keywords = ["mmr", "merkle", "proof", "substrate", "bridge"]
+refs = [
+  { repo = "midnight-reserve-contracts", path = "lib/bridge/beefy.ak", lines = "verify_mmr_update_proof", author = "microproofs", note = "MMR walk + root reconstruction." }
+]
+gotchas = "MMR uses position math (peaks structure); leaf position derives from append order. Off-by-one errors are silent."
+
+[[patterns]]
+name = "linked-list"
+title = "On-chain linked list"
+description = "Authenticated linked list where each node holds an NFT proving its position. Enables ordered iteration + insertion/removal in single tx."
+keywords = ["linked-list", "list", "ordered", "nft"]
+refs = [
+  { repo = "anastasia-labs-aiken", path = "lib/aiken-design-patterns/linked-list.ak", author = "Anastasia Labs", note = "Reference impl with insertion/removal validators." }
+]
+gotchas = "Adjacent-node validation required on every modify. Missing one = corruption."
+
+[[patterns]]
+name = "stake-validator-multiplexing"
+title = "Stake validator multiplexing"
+description = "Use a single stake-credential validator to gatekeep many spending validators. Each spend defers to one withdrawal; only ONE script execution per tx instead of N."
+keywords = ["stake", "withdrawal", "performance", "exec-budget"]
+refs = [
+  { repo = "anastasia-labs-aiken", path = "lib/aiken-design-patterns/stake-validator.ak", author = "Anastasia Labs", note = "Pattern for amortizing exec budget across many spend ops." }
+]
+gotchas = "Withdraw amount must be 0 (not real lovelace movement). Some wallets/builders break with 0-withdrawals."
+
+[[patterns]]
+name = "datum-tagging"
+title = "Datum tagging for ownership/state separation"
+description = "Encode validator-state UTxOs vs user-state UTxOs at the same address using a tag in the datum. Lets one validator govern multiple roles."
+keywords = ["datum", "validator", "state", "tag"]
+refs = [
+  { repo = "sundae-protocol", path = "lib/sundae/multisig.ak", author = "SundaeSwap-finance", note = "Production example of tagged datum dispatch." }
+]
+gotchas = "Tag must be at known position; renaming or reordering datum fields silently breaks dispatch."
+
+[[patterns]]
+name = "patricia-trie-verifier"
+title = "Substrate Patricia trie inclusion verifier"
+description = "Verify a key/value is in a Substrate Patricia Merkle trie with given root. Required for proving extrinsic membership in a finalized block."
+keywords = ["patricia", "trie", "substrate", "bridge", "extrinsics"]
+refs = [
+  { repo = "polytope-merkle-trees", path = "src/MerklePatricia.sol", author = "Polytope Labs", note = "Solidity REFERENCE impl. No Aiken port exists. Port from this." }
+]
+gotchas = "TrieLayout v1: three node types (leaf/branch/extension), nibble paths, inline-or-hash children at 32-byte boundary. Substrate trie uses Blake2b256, not Keccak."
+alternatives = "MMR (different tree, different scope)"
+
+[[patterns]]
+name = "scale-codec"
+title = "SCALE encoding (Substrate codec)"
+description = "Encode/decode SCALE-formatted byte payloads. Substrate's wire format. Length-prefixed compact integers + concatenation."
+keywords = ["scale", "codec", "substrate", "encoding"]
+refs = [
+  { repo = "midnight-reserve-contracts", path = "lib/bridge/codec.ak", author = "microproofs", note = "Encoder for BEEFY-specific structs (Commitment, BeefyMmrLeaf). Generic decoder NOT included." }
+]
+gotchas = "Compact integer encoding has 4 modes (single-byte, two-byte, four-byte, big-int). Wrong mode = silent decode error."
