@@ -134,18 +134,6 @@ pub struct CorpusListArgs {
     pub tag: Option<String>,
 }
 
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct PatternCatalogArgs {
-    /// Exact pattern slug. Mutually exclusive with `query`.
-    #[serde(default)]
-    pub name: Option<String>,
-    /// Fuzzy query against name/title/description/keywords.
-    #[serde(default)]
-    pub query: Option<String>,
-    #[serde(default = "default_max_hits")]
-    pub max_hits: usize,
-}
-
 impl From<CheckArgs> for tools::CheckRequest {
     fn from(a: CheckArgs) -> Self {
         Self { path: a.path, module: a.module }
@@ -226,11 +214,6 @@ impl From<CorpusListArgs> for tools::CorpusListRequest {
         Self { tag: a.tag }
     }
 }
-impl From<PatternCatalogArgs> for tools::PatternCatalogRequest {
-    fn from(a: PatternCatalogArgs) -> Self {
-        Self { name: a.name, query: a.query, max_hits: a.max_hits }
-    }
-}
 
 #[tool_router]
 impl AikenMcpServer {
@@ -296,7 +279,7 @@ impl AikenMcpServer {
         json_call(tools::handle_budget(self.deps.runner.clone(), args.into()).await)
     }
 
-    #[tool(description = "Lookup pub fn / pub type / pub const / validator declarations across the configured Aiken corpus.")]
+    #[tool(description = "Lookup pub fn / pub type / pub const / validator declarations across the configured Aiken corpus. Query matches symbol name OR doc-comment text, so search by topic (e.g. 'merkle proof') or by symbol name interchangeably. Each result includes the preceding `///` doc comment when present.")]
     async fn aiken_symbol_lookup(&self, Parameters(args): Parameters<SymbolLookupArgs>) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_symbol_lookup(self.deps.symbols.clone(), args.into()).await)
     }
@@ -325,11 +308,6 @@ impl AikenMcpServer {
     async fn aiken_corpus_list(&self, Parameters(args): Parameters<CorpusListArgs>) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_corpus_list(args.into()).await)
     }
-
-    #[tool(description = "Look up curated Aiken patterns (e.g. two-stage-upgrade, merkle-multi-member-proof, beefy-consensus-verify). Pass `name` for exact slug or `query` for fuzzy match. Each result has refs into the corpus.")]
-    async fn aiken_pattern_catalog(&self, Parameters(args): Parameters<PatternCatalogArgs>) -> Result<CallToolResult, McpError> {
-        json_call(tools::handle_pattern_catalog(args.into()).await)
-    }
 }
 
 #[tool_handler]
@@ -344,7 +322,8 @@ impl ServerHandler for AikenMcpServer {
             "Aiken tooling: aiken_check / aiken_build / aiken_test / aiken_fmt / aiken_budget / aiken_uplc / aiken_new wrap the Aiken CLI. \
              aiken_hover / aiken_completions / aiken_definition use `aiken lsp --stdio` for type-aware queries. \
              aiken_pattern_search greps user-supplied reference Aiken codebases (AIKEN_MCP_CORPUS). \
-             aiken_symbol_lookup indexes pub fn/type/const/validator declarations across the corpus. \
+             aiken_symbol_lookup indexes pub fn/type/const/validator declarations + their doc comments across the corpus. \
+             aiken_corpus_list returns the curated repo manifest. \
              aiken_blueprint parses plutus.json (CIP-57). \
              aiken_docs fetches pages from aiken-lang.org with caching. \
              aiken_explain looks up canonical fixes for common Aiken error strings. \

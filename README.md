@@ -19,13 +19,12 @@ Aiken code with tight feedback.
 | `aiken_completions` | LSP completions. |
 | `aiken_definition` | LSP go-to-definition. |
 | `aiken_budget` | Per-test mem/cpu vs Plutus tx limit (%). |
-| `aiken_symbol_lookup` | Index `pub fn`/`pub type`/`pub const`/`validator` across the corpus. |
+| `aiken_symbol_lookup` | Index `pub fn`/`pub type`/`pub const`/`validator` + preceding `///` docs across the corpus. Query matches name OR doc text. |
 | `aiken_blueprint` | Parse `plutus.json` (CIP-57): validators, hashes, schemas, sizes. |
 | `aiken_uplc` | `aiken uplc decode <target>`. |
 | `aiken_new` | `aiken new` scaffolder. |
 | `aiken_explain` | Static error → fix lookup. |
 | `aiken_corpus_list` | List curated high-expertise Aiken codebases (from `corpora.toml`). |
-| `aiken_pattern_catalog` | Curated pattern catalog with refs into corpus (`patterns.toml`). |
 
 ## Architecture
 
@@ -91,16 +90,17 @@ Or hand-edit `~/.claude.json`:
 Project scope: drop a `.mcp.json` at the project root with the same shape
 (overrides user scope when both exist).
 
-## Curated corpus + patterns
+## Curated corpus
 
 `crates/tools/data/corpora.toml` is a hand-curated list of high-expertise
 Aiken codebases (aiken-lang, microproofs, Anastasia Labs, SundaeSwap,
-Spectrum, etc.). `crates/tools/data/patterns.toml` is a hand-curated catalog
-of named patterns (two-stage upgrade, BEEFY consensus verify, merkle
-multi-member, linked-list, etc.) with refs into the corpus.
+Spectrum, etc.). The MCP exposes it via `aiken_corpus_list` (filterable by
+tag).
 
-The MCP exposes these via `aiken_corpus_list` (filterable by tag) and
-`aiken_pattern_catalog` (lookup by name or fuzzy query).
+Patterns are not separately catalogued. Instead, `aiken_symbol_lookup` reads
+the `///` doc comments authors already write above their public symbols and
+matches queries against both names and doc text. This lets you search by
+topic (e.g. "merkle proof") without hand-curating a pattern catalog.
 
 To clone everything in the manifest:
 
@@ -108,7 +108,7 @@ To clone everything in the manifest:
 scripts/sync-corpus.sh ~/code/aiken-corpus
 ```
 
-Add new repos / patterns by editing the TOML files and rebuilding the server.
+Add new repos by editing `corpora.toml` and rebuilding.
 
 ## Configuration (env vars)
 
