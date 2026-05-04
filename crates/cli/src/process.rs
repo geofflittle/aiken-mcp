@@ -8,16 +8,16 @@ use tokio::process::Command;
 use tracing::debug;
 
 use aiken_mcp_core::{
-    AikenRunner, BuildOutcome, CheckOutcome, CoreError, CoreResult, FmtOutcome, Project,
-    TestOutcome,
+    AikenRunner, BuildOutcome, CheckOutcome, CoreError, CoreResult, FmtOutcome,
+    NewProjectOutcome, Project, TestOutcome, UplcOutcome,
 };
 
 use crate::parse;
 
 /// `AikenRunner` implementation that shells out to the `aiken` binary.
 ///
-/// The binary path is resolved once at construction. By default `aiken` is
-/// looked up on `PATH`; tests + alternative installs can override.
+/// Binary path resolves once at construction. Default lookup uses `PATH`;
+/// tests + alternative installs can override via `with_binary`.
 #[derive(Debug, Clone)]
 pub struct AikenCliRunner {
     binary: PathBuf,
@@ -34,6 +34,10 @@ impl AikenCliRunner {
         Self {
             binary: binary.into(),
         }
+    }
+
+    pub fn binary(&self) -> &PathBuf {
+        &self.binary
     }
 
     async fn run<I, S>(&self, project: Option<&Project>, args: I) -> CoreResult<RawCommand>
@@ -55,6 +59,27 @@ impl AikenCliRunner {
             _ => CoreError::Io(err),
         })?;
 
+        Ok(RawCommand {
+            success: output.status.success(),
+            exit_code: output.status.code(),
+            stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
+            stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
+        })
+    }
+
+    async fn run_in_dir<I, S>(&self, dir: &str, args: I) -> CoreResult<RawCommand>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<OsStr>,
+    {
+        let mut cmd = Command::new(&self.binary);
+        cmd.args(args);
+        cmd.current_dir(dir);
+        cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
+        let output = cmd.output().await.map_err(|err| match err.kind() {
+            std::io::ErrorKind::NotFound => CoreError::AikenNotInstalled,
+            _ => CoreError::Io(err),
+        })?;
         Ok(RawCommand {
             success: output.status.success(),
             exit_code: output.status.code(),
@@ -117,7 +142,6 @@ impl AikenRunner for AikenCliRunner {
             args.push("-m".to_string());
             args.push(f.to_string());
         }
-
         let raw = self.run(Some(project), args).await?;
         let diagnostics = parse::parse_check(&raw.stdout, &raw.stderr);
         Ok(CheckOutcome {
@@ -157,12 +181,40 @@ impl AikenRunner for AikenCliRunner {
     }
 
     async fn fmt(&self, source: &str) -> CoreResult<FmtOutcome> {
-        let raw = self
-            .run_with_stdin(["fmt", "--stdin"], source)
-            .await?;
+        let raw = self.run_with_stdin(["fmt", "--stdin"], source).await?;
         Ok(FmtOutcome {
             success: raw.success,
             formatted_source: if raw.success { Some(raw.stdout) } else { None },
+            raw_stderr: raw.stderr,
+        })
+    }
+
+    async fn uplc_decode(&self, project: &Project, target: &str) -> CoreResult<UplcOutcome> {
+        let raw = self
+            .run(Some(project), ["uplc", "decode", target])
+            .await?;
+        Ok(UplcOutcome {
+            success: raw.success,
+            uplc: raw.stdout,
+            raw_stderr: raw.stderr,
+        })
+    }
+
+    async fn new_project(
+        &self,
+        parent_dir: &str,
+        name: &str,
+    ) -> CoreResult<NewProjectOutcome> {
+        let raw = self.run_in_dir(parent_dir, ["new", name]).await?;
+        let created_path = if raw.success {
+            Some(format!("{}/{}", parent_dir.trim_end_matches('/'), name))
+        } else {
+            None
+        };
+        Ok(NewProjectOutcome {
+            success: raw.success,
+            created_path,
+            raw_stdout: raw.stdout,
             raw_stderr: raw.stderr,
         })
     }

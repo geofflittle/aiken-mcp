@@ -1,22 +1,21 @@
 [package]
-name = "aiken-mcp-tools"
+name = "aiken-mcp-blueprint"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Tool handlers for aiken-mcp"
+description = "Plutus blueprint (CIP-57) reader for aiken-mcp"
 
 [dependencies]
 aiken-mcp-core.workspace = true
 async-trait.workspace = true
-regex = "1"
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
-tokio = { workspace = true, features = ["macros", "rt-multi-thread", "fs"] }
-toml = "0.8"
+tokio = { workspace = true, features = ["fs", "io-util", "macros", "rt-multi-thread"] }
 tracing.workspace = true
 
 [dev-dependencies]
 tempfile = "3"
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

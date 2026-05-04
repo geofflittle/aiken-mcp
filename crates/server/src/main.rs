@@ -9,7 +9,7 @@ use tracing_subscriber::EnvFilter;
 
 mod server;
 
-use server::{ServerDeps, AikenMcpServer};
+use server::{AikenMcpServer, ServerDeps};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -23,9 +23,10 @@ async fn main() -> Result<()> {
 
 fn init_tracing() {
     // MCP servers must NOT write to stdout (it's the transport channel).
-    // Send all logs to stderr.
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::try_from_env("AIKEN_MCP_LOG").unwrap_or_else(|_| EnvFilter::new("info")))
+        .with_env_filter(
+            EnvFilter::try_from_env("AIKEN_MCP_LOG").unwrap_or_else(|_| EnvFilter::new("info")),
+        )
         .with_writer(std::io::stderr)
         .with_ansi(false)
         .init();
@@ -35,27 +36,47 @@ fn init_tracing() {
 fn build_deps() -> ServerDeps {
     let runner = Arc::new(aiken_mcp_cli::AikenCliRunner::new());
 
-    let corpus_roots = std::env::var("AIKEN_MCP_CORPUS")
+    let corpus_roots = parse_path_list("AIKEN_MCP_CORPUS");
+    let corpus = Arc::new(aiken_mcp_corpus::RipgrepCorpus::new(corpus_roots.clone()));
+
+    let docs_cache = std::env::var("AIKEN_MCP_DOCS_CACHE")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| dirs_cache_dir().join("aiken-mcp/docs"));
+    let docs_base = std::env::var("AIKEN_MCP_DOCS_BASE_URL")
+        .unwrap_or_else(|_| "https://aiken-lang.org".to_string());
+    let docs = Arc::new(aiken_mcp_docs::HttpDocsFetcher::new(docs_base, docs_cache));
+
+    let lsp = Arc::new(aiken_mcp_lsp::AikenLspClient::new());
+
+    let symbol_roots = if corpus_roots.is_empty() {
+        parse_path_list("AIKEN_MCP_SYMBOLS")
+    } else {
+        corpus_roots
+    };
+    let symbols = Arc::new(aiken_mcp_symbols::FileWalkSymbolIndex::new(symbol_roots));
+
+    let blueprint = Arc::new(aiken_mcp_blueprint::JsonBlueprintReader::new());
+
+    ServerDeps {
+        runner,
+        corpus,
+        docs,
+        lsp,
+        symbols,
+        blueprint,
+    }
+}
+
+fn parse_path_list(var: &str) -> Vec<PathBuf> {
+    std::env::var(var)
         .ok()
         .map(|raw| {
             raw.split(':')
                 .filter(|s| !s.is_empty())
                 .map(PathBuf::from)
-                .collect::<Vec<_>>()
+                .collect()
         })
-        .unwrap_or_default();
-    let corpus = Arc::new(aiken_mcp_corpus::RipgrepCorpus::new(corpus_roots));
-
-    let docs_cache = std::env::var("AIKEN_MCP_DOCS_CACHE")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| {
-            dirs_cache_dir().join("aiken-mcp/docs")
-        });
-    let docs_base = std::env::var("AIKEN_MCP_DOCS_BASE_URL")
-        .unwrap_or_else(|_| "https://aiken-lang.org".to_string());
-    let docs = Arc::new(aiken_mcp_docs::HttpDocsFetcher::new(docs_base, docs_cache));
-
-    ServerDeps { runner, corpus, docs }
+        .unwrap_or_default()
 }
 
 fn dirs_cache_dir() -> PathBuf {

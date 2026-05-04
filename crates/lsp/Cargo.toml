@@ -1,22 +1,19 @@
 [package]
-name = "aiken-mcp-tools"
+name = "aiken-mcp-lsp"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Tool handlers for aiken-mcp"
+description = "LSP client for aiken-mcp (wraps `aiken lsp --stdio`)"
 
 [dependencies]
 aiken-mcp-core.workspace = true
 async-trait.workspace = true
-regex = "1"
+lsp-types = "0.97"
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
-tokio = { workspace = true, features = ["macros", "rt-multi-thread", "fs"] }
-toml = "0.8"
+tokio = { workspace = true, features = ["process", "io-util", "macros", "rt-multi-thread", "sync", "time"] }
 tracing.workspace = true
-
-[dev-dependencies]
-tempfile = "3"
+url = "2"

@@ -16,6 +16,9 @@ aiken-mcp-core.workspace = true
 aiken-mcp-cli.workspace = true
 aiken-mcp-corpus.workspace = true
 aiken-mcp-docs.workspace = true
+aiken-mcp-lsp.workspace = true
+aiken-mcp-symbols.workspace = true
+aiken-mcp-blueprint.workspace = true
 aiken-mcp-tools.workspace = true
 
 anyhow.workspace = true

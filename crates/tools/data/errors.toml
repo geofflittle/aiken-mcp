@@ -1,0 +1,67 @@
+# Static error-explainer entries. Each `[[entries]]` block:
+# - `pattern`: rust regex matched against the user-supplied error string
+# - `title`: short canonical name
+# - `explanation`: prose explanation of what the error means
+# - `fix`: (optional) concrete fix steps
+#
+# Patterns are tried in order; first match wins.
+
+[[entries]]
+pattern = "Unknown variable"
+title = "Unknown variable"
+explanation = "The compiler couldn't resolve a name to any binding in scope. This usually means a typo, a missing `use`/import, or a function defined in another module that hasn't been imported."
+fix = "Verify spelling. Add a `use module/path.{Name}` import. Confirm the symbol is `pub` if it lives in another module."
+
+[[entries]]
+pattern = "Unknown type"
+title = "Unknown type"
+explanation = "A type name was referenced but not in scope."
+fix = "Import via `use module/path.{TypeName}` or qualify with the module path. Check `pub type` visibility if the type lives elsewhere."
+
+[[entries]]
+pattern = "Couldn't unify"
+title = "Type mismatch"
+explanation = "Two types the compiler tried to match are incompatible. Aiken is structurally and nominally typed; mismatched widths or wrappers will not coerce."
+fix = "Inspect the function signature being called. Use `aiken_hover` at the call site to see expected vs supplied types. Consider an explicit conversion (e.g. `expect`, pattern match)."
+
+[[entries]]
+pattern = "Cyclic dependency"
+title = "Module cycle"
+explanation = "Two or more modules import each other directly or transitively, forming a cycle. Aiken does not allow this."
+fix = "Extract shared types/functions to a third module both can depend on. Or invert the dependency by moving one symbol up/down the module graph."
+
+[[entries]]
+pattern = "exceeds maximum execution units"
+title = "Plutus exec budget exceeded"
+explanation = "Your validator or test exceeded the per-transaction Plutus execution budget (default ~14M mem / ~10B cpu units on mainnet)."
+fix = "Use `aiken_budget` to see per-test mem/cpu. Profile expensive recursion. Consider: reference-input pre-verified state, smaller proof depths, batched hashing, splitting validator across multiple txs."
+
+[[entries]]
+pattern = "Compact path is too long"
+title = "Compact integer encoding overflow"
+explanation = "A compact-encoded length or numeric field exceeded SCALE's compact representation range."
+fix = "Check the input size. SCALE compact mode supports up to 2^30. If you're encoding large data, switch to length-prefixed bytes or split the payload."
+
+[[entries]]
+pattern = "expected.*got"
+title = "Pattern shape mismatch"
+explanation = "A constructor or pattern-match expected a different shape than the value provided."
+fix = "Check `pub type` arity. If you added/removed a field, update every match site. Use `aiken_hover` on the constructor to see its current shape."
+
+[[entries]]
+pattern = "duplicate"
+title = "Duplicate definition"
+explanation = "A name was defined more than once in the same scope."
+fix = "Rename one definition or remove the duplicate. Common cause: shadowing a `use` import by re-defining locally."
+
+[[entries]]
+pattern = "missing return"
+title = "Missing return value"
+explanation = "A function body lacks a value of the declared return type on every path."
+fix = "Ensure every branch returns. Aiken is expression-based — the last expression of a block is its value. Pattern matches must cover every variant."
+
+[[entries]]
+pattern = "Cannot find module"
+title = "Missing module"
+explanation = "An import path doesn't resolve to any source file in the project or its dependencies."
+fix = "Check `aiken.toml` `[dependencies]`. Run `aiken packages add <name>` for missing deps. Verify file path matches module path (Aiken uses `lib/foo/bar.ak` → `foo/bar`)."

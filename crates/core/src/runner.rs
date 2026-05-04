@@ -5,7 +5,6 @@ use crate::diagnostic::Diagnostic;
 use crate::error::CoreResult;
 use crate::project::Project;
 
-/// Outcome of `aiken check`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CheckOutcome {
     pub success: bool,
@@ -14,7 +13,6 @@ pub struct CheckOutcome {
     pub raw_stderr: String,
 }
 
-/// Outcome of `aiken build`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BuildOutcome {
     pub success: bool,
@@ -48,6 +46,21 @@ pub struct FmtOutcome {
     pub raw_stderr: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UplcOutcome {
+    pub success: bool,
+    pub uplc: String,
+    pub raw_stderr: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NewProjectOutcome {
+    pub success: bool,
+    pub created_path: Option<String>,
+    pub raw_stdout: String,
+    pub raw_stderr: String,
+}
+
 /// Abstraction over how Aiken commands are executed. Lets tests inject a fake
 /// runner without running real subprocess work.
 #[async_trait]
@@ -56,5 +69,7 @@ pub trait AikenRunner: Send + Sync {
     async fn build(&self, project: &Project) -> CoreResult<BuildOutcome>;
     async fn test(&self, project: &Project, filter: Option<&str>) -> CoreResult<TestOutcome>;
     async fn fmt(&self, source: &str) -> CoreResult<FmtOutcome>;
+    async fn uplc_decode(&self, project: &Project, target: &str) -> CoreResult<UplcOutcome>;
+    async fn new_project(&self, parent_dir: &str, name: &str) -> CoreResult<NewProjectOutcome>;
     async fn version(&self) -> CoreResult<String>;
 }

@@ -5,6 +5,9 @@ members = [
     "crates/cli",
     "crates/corpus",
     "crates/docs",
+    "crates/lsp",
+    "crates/symbols",
+    "crates/blueprint",
     "crates/tools",
     "crates/server",
 ]
@@ -21,6 +24,9 @@ aiken-mcp-core = { path = "crates/core", version = "0.1.0" }
 aiken-mcp-cli = { path = "crates/cli", version = "0.1.0" }
 aiken-mcp-corpus = { path = "crates/corpus", version = "0.1.0" }
 aiken-mcp-docs = { path = "crates/docs", version = "0.1.0" }
+aiken-mcp-lsp = { path = "crates/lsp", version = "0.1.0" }
+aiken-mcp-symbols = { path = "crates/symbols", version = "0.1.0" }
+aiken-mcp-blueprint = { path = "crates/blueprint", version = "0.1.0" }
 aiken-mcp-tools = { path = "crates/tools", version = "0.1.0" }
 
 anyhow = "1"
