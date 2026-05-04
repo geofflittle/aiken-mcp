@@ -20,36 +20,108 @@ description = "Official Aiken standard library."
 notes = "Canonical reference for idiomatic Aiken. Read first."
 
 [[entries]]
-name = "aiken-design-patterns"
-url = "https://github.com/aiken-lang/design-patterns.git"
+name = "aiken-prelude"
+url = "https://github.com/aiken-lang/prelude.git"
 author = "aiken-lang"
-tags = ["patterns", "validators", "examples"]
-description = "Curated design patterns by the Aiken core team."
-notes = "Treat as canonical for validator patterns. Updated alongside compiler."
+tags = ["stdlib", "primitives"]
+description = "Aiken prelude (auto-imported)."
+notes = "Lower-level than stdlib. Read for built-in types + base ops."
+
+[[entries]]
+name = "merkle-patricia-forestry"
+url = "https://github.com/aiken-lang/merkle-patricia-forestry.git"
+author = "aiken-lang"
+tags = ["merkle", "patricia", "trie", "audited", "high-priority"]
+description = "Aiken + Node.js libs for Merkle Patricia Tries on Cardano."
+notes = "Production-grade Aiken impl of Patricia trie work. HIGH PRIORITY for trie verifier porting."
+
+[[entries]]
+name = "aiken-sparse-merkle-tree"
+url = "https://github.com/aiken-lang/sparse-merkle-tree.git"
+author = "aiken-lang"
+tags = ["merkle", "sparse", "validator"]
+description = "Sparse Merkle tree library focused on efficient on-chain proofs."
+notes = "Reference for ordered-merkle-tree patterns."
+
+[[entries]]
+name = "aiken-fuzz"
+url = "https://github.com/aiken-lang/fuzz.git"
+author = "aiken-lang"
+tags = ["testing", "fuzz", "property-testing"]
+description = "Fuzzers for property-based testing in Aiken."
+notes = "Read for test-writing patterns + Aiken's PBT harness."
+
+[[entries]]
+name = "aiken-staking"
+url = "https://github.com/aiken-lang/staking.git"
+author = "aiken-lang"
+tags = ["staking", "delegation", "stake-validator"]
+description = "Stateful redelegation by tying delegation credential to spend validator."
+notes = "Reference for stake-validator multiplexing pattern."
 
 [[entries]]
 name = "midnight-reserve-contracts"
 url = "https://github.com/midnightntwrk/midnight-reserve-contracts.git"
 author = "Kasey/microproofs"
-tags = ["beefy", "mmr", "merkle", "bridge", "audited"]
+tags = ["beefy", "mmr", "merkle", "bridge", "audited", "high-priority"]
 description = "Cardano-side BEEFY authority tracker for Midnight. TxPipe-audited."
 notes = "Reference impl of multi-member Merkle proofs, MMR walks, BEEFY signature verify, two-stage upgradable contracts. Highest-quality bridge primitives in Aiken."
 
 [[entries]]
 name = "fortuna"
-url = "https://github.com/cardano-foundation/fortuna.git"
+url = "https://github.com/cardano-miners/fortuna.git"
 author = "microproofs"
 tags = ["mining", "pow", "validator"]
-description = "PoW-style minting validator (TUNA). Established Cardano onchain randomness source."
+description = "PoW-style minting validator (TUNA). Cardano onchain randomness source."
 notes = "Worth studying for tight exec-budget code paths."
 
 [[entries]]
-name = "sundae-protocol"
+name = "sundae-contracts"
 url = "https://github.com/SundaeSwap-finance/sundae-contracts.git"
 author = "SundaeSwap-finance"
 tags = ["dex", "amm", "pool", "production"]
 description = "Production DEX validators (SundaeSwap V3)."
 notes = "Mature production AMM in Aiken. Read for batched-order patterns + datum design."
+
+[[entries]]
+name = "anastasia-aiken-design-patterns"
+url = "https://github.com/Anastasia-Labs/aiken-design-patterns.git"
+author = "Anastasia Labs"
+tags = ["patterns", "linked-list", "merkle", "validators"]
+description = "Curated Aiken design patterns (linked lists, merkle trees, multi-stake-validators)."
+notes = "Closest thing to a canonical pattern reference for Aiken."
+
+[[entries]]
+name = "anastasia-aiken-merkle-tree"
+url = "https://github.com/Anastasia-Labs/aiken-merkle-tree.git"
+author = "Anastasia Labs"
+tags = ["merkle", "tree"]
+description = "Anastasia Labs Aiken merkle tree library."
+notes = "Compare with aiken-lang/sparse-merkle-tree."
+
+[[entries]]
+name = "anastasia-aiken-trie"
+url = "https://github.com/Anastasia-Labs/aiken-trie.git"
+author = "Anastasia Labs"
+tags = ["trie", "merkle", "validator"]
+description = "Anastasia Labs Aiken trie library."
+notes = "Alternative trie impl; compare with merkle-patricia-forestry."
+
+[[entries]]
+name = "anastasia-aiken-linked-list"
+url = "https://github.com/Anastasia-Labs/aiken-linked-list.git"
+author = "Anastasia Labs"
+tags = ["linked-list", "list", "ordered"]
+description = "On-chain linked list pattern."
+notes = "Standalone version of linked-list pattern from anastasia-aiken-design-patterns."
+
+[[entries]]
+name = "anastasia-upgradable-multisig"
+url = "https://github.com/Anastasia-Labs/aiken-upgradable-multisig.git"
+author = "Anastasia Labs"
+tags = ["multisig", "upgrade", "governance"]
+description = "Upgradable multisig contract with adjustable thresholds + dynamic signer set."
+notes = "Reference for multisig + threshold + upgrade combo."
 
 [[entries]]
 name = "amaru"
@@ -60,25 +132,9 @@ description = "Cardano node rewrite. Not Aiken itself, but governs ledger rules 
 notes = "Read for ledger-rule context. Skip for Aiken-only patterns."
 
 [[entries]]
-name = "anastasia-labs-aiken"
-url = "https://github.com/Anastasia-Labs/aiken-design-patterns.git"
-author = "Anastasia Labs"
-tags = ["patterns", "linked-list", "merkle", "validators"]
-description = "Production Aiken design patterns (linked lists, merkle trees, multi-stake-validators)."
-notes = "Read alongside aiken-lang/design-patterns; complementary."
-
-[[entries]]
-name = "splash"
-url = "https://github.com/spectrum-finance/cardano-dex-aiken.git"
-author = "Spectrum Finance"
-tags = ["dex", "amm", "production"]
-description = "Aiken-rewrite of Spectrum DEX validators."
-notes = "Alternative AMM design point. Compare with Sundae."
-
-[[entries]]
 name = "polytope-merkle-trees"
 url = "https://github.com/polytope-labs/solidity-merkle-trees.git"
 author = "Polytope Labs"
 tags = ["merkle", "patricia", "trie", "substrate", "reference"]
 description = "Solidity reference impl of Substrate Merkle Patricia trie verifier."
-notes = "Not Aiken — Solidity. Listed because it's the canonical port target for Aiken Patricia trie verifier (no native Aiken impl exists)."
+notes = "Not Aiken — Solidity. Listed because it's the canonical port target for Substrate-Patricia-trie verification work."
