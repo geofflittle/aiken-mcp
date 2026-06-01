@@ -1,129 +1,105 @@
 # aiken-mcp
 
-MCP server for Aiken development. Exposes the Aiken CLI, a reference-corpus
-search, and Aiken docs fetching as MCP tools so an LLM client can iterate on
-Aiken code with tight feedback.
+An MCP server that gives LLM coding assistants (Claude Code, Cursor, etc.) hands-on tools for writing [Aiken](https://aiken-lang.org) smart contracts.
 
-## Tools
+## What it gives the LLM
 
-| Name | Purpose |
+| Capability | Tools |
 |---|---|
-| `aiken_check` | Run `aiken check` on a project. Returns diagnostics. |
-| `aiken_build` | Run `aiken build`. Returns diagnostics + artifacts. |
-| `aiken_test` | Run aiken tests (via `aiken check`). Returns pass/fail per test. |
-| `aiken_fmt` | Format inline source via `aiken fmt --stdin`. |
-| `aiken_pattern_search` | Ripgrep over user-supplied reference Aiken codebases. |
-| `aiken_docs` | Fetch a page from `aiken-lang.org` with on-disk cache. |
-| `aiken_version` | Report the installed Aiken CLI version. |
-| `aiken_hover` | LSP hover at file/line/column via `aiken lsp --stdio`. |
-| `aiken_completions` | LSP completions. |
-| `aiken_definition` | LSP go-to-definition. |
-| `aiken_budget` | Per-test mem/cpu vs Plutus tx limit (%). |
-| `aiken_symbol_lookup` | Index `pub fn`/`pub type`/`pub const`/`validator` + preceding `///` docs across the corpus. Query matches name OR doc text. |
-| `aiken_blueprint` | Parse `plutus.json` (CIP-57): validators, hashes, schemas, sizes. |
-| `aiken_uplc` | `aiken uplc decode <target>`. |
-| `aiken_new` | `aiken new` scaffolder. |
-| `aiken_explain` | Static error → fix lookup. |
-| `aiken_corpus_list` | List curated high-expertise Aiken codebases (from `corpora.toml`). |
+| Compile + test | `aiken_check`, `aiken_build`, `aiken_test`, `aiken_budget` |
+| Format + scaffold | `aiken_fmt`, `aiken_new` |
+| Type-aware queries (LSP) | `aiken_hover`, `aiken_completions`, `aiken_definition` |
+| Inspect artifacts | `aiken_blueprint` (CIP-57 plutus.json), `aiken_uplc` |
+| Learn from real code | `aiken_corpus_list`, `aiken_pattern_search`, `aiken_symbol_lookup` |
+| Reference + recovery | `aiken_docs` (aiken-lang.org with cache), `aiken_explain` (canonical error fixes) |
+| Meta | `aiken_version` |
 
-## Architecture
+The corpus tools index curated high-quality Aiken codebases (aiken-lang/stdlib, microproofs, Anastasia Labs, SundaeSwap, Spectrum, etc.) so the LLM can find idiomatic patterns by name or doc text.
 
-Workspace of six crates:
+## Quick start
 
-```
-crates/
-├── core/     # domain types + traits (no transport, no CLI)
-├── cli/      # AikenRunner impl wrapping the `aiken` CLI subprocess
-├── corpus/   # CorpusSearch impl wrapping ripgrep
-├── docs/     # DocsFetcher impl with reqwest + on-disk cache
-├── tools/    # tool handlers (depend only on core traits)
-└── server/   # bin crate. rmcp stdio transport. Wires tools + impls.
-```
+### 1. Install prerequisites
 
-Decoupling:
+- Rust 1.75+
+- [Aiken CLI](https://aiken-lang.org/installation-instructions) on PATH
+- [ripgrep](https://github.com/BurntSushi/ripgrep) on PATH (only needed for `aiken_pattern_search`)
 
-- `core` knows nothing about MCP, HTTP, subprocesses, or filesystem layout.
-  Exposes traits (`AikenRunner`, `CorpusSearch`, `DocsFetcher`) + domain types.
-- `cli`, `corpus`, `docs` are independent impls of the core traits. Swap any
-  for a fake in tests or alternate impl in production.
-- `tools` handlers take trait objects (`Arc<dyn AikenRunner>`, etc.). No
-  knowledge of how those traits are realized.
-- `server` is the only crate that touches `rmcp`. All MCP-specific concerns
-  (tool routing, JSON Schema, CallToolResult) stay isolated here.
-
-Adding a new tool: add a handler in `tools/`, add a `#[tool]` registration in
-`server/src/server.rs`. No churn to `core` unless a new trait is needed.
-
-## Building
+### 2. Build the server
 
 ```sh
-cd ~/code/aiken-mcp
+git clone https://github.com/geofflittle/aiken-mcp
+cd aiken-mcp
 cargo build --release
 ```
 
 Binary lands at `target/release/aiken-mcp`.
 
-## Registering with Claude Code
+### 3. Register with your client
 
-User scope (every Claude session, every project):
+**Claude Code (recommended):**
 
 ```sh
-claude mcp add -s user aiken /Users/geofflittle/code/aiken-mcp/target/release/aiken-mcp
+claude mcp add -s user aiken $(pwd)/target/release/aiken-mcp
 ```
 
-Or hand-edit `~/.claude.json`:
+**Manual config** (any MCP client). Add to your client config:
 
 ```json
 {
   "mcpServers": {
     "aiken": {
-      "command": "/Users/geofflittle/code/aiken-mcp/target/release/aiken-mcp",
+      "command": "/absolute/path/to/aiken-mcp/target/release/aiken-mcp",
       "env": {
-        "AIKEN_MCP_CORPUS": "/Users/geofflittle/code/midnight-reserve-contracts:/Users/geofflittle/code/aiken-stdlib",
-        "AIKEN_MCP_LOG": "info"
+        "AIKEN_MCP_CORPUS": "/path/to/aiken-stdlib:/path/to/another-repo"
       }
     }
   }
 }
 ```
 
-Project scope: drop a `.mcp.json` at the project root with the same shape
-(overrides user scope when both exist).
+### 4. (Optional) Clone the curated corpus
 
-## Curated corpus
-
-`crates/tools/data/corpora.toml` is a hand-curated list of high-expertise
-Aiken codebases (aiken-lang, microproofs, Anastasia Labs, SundaeSwap,
-Spectrum, etc.). The MCP exposes it via `aiken_corpus_list` (filterable by
-tag).
-
-Patterns are not separately catalogued. Instead, `aiken_symbol_lookup` reads
-the `///` doc comments authors already write above their public symbols and
-matches queries against both names and doc text. This lets you search by
-topic (e.g. "merkle proof") without hand-curating a pattern catalog.
-
-To clone everything in the manifest:
+For best results with `aiken_symbol_lookup` and `aiken_pattern_search`, clone the reference codebases:
 
 ```sh
 scripts/sync-corpus.sh ~/code/aiken-corpus
 ```
 
-Add new repos by editing `corpora.toml` and rebuilding.
+Then point `AIKEN_MCP_CORPUS` at that directory (colon-separated paths).
 
-## Configuration (env vars)
+### 5. Verify
+
+Restart your client. Ask it: *"Use aiken_version to check the Aiken CLI is wired up."*
+
+## Configuration
+
+All optional. Set via the `env` block in your client config.
 
 | Var | Default | Purpose |
 |---|---|---|
-| `AIKEN_MCP_CORPUS` | empty | Colon-separated absolute paths to reference Aiken codebases |
-| `AIKEN_MCP_DOCS_BASE_URL` | `https://aiken-lang.org` | Override docs base URL |
-| `AIKEN_MCP_DOCS_CACHE` | `~/Library/Caches/aiken-mcp/docs` (macOS) or `$XDG_CACHE_HOME/aiken-mcp/docs` | Disk cache directory |
-| `AIKEN_MCP_LOG` | `info` | tracing-subscriber `EnvFilter` directives |
+| `AIKEN_MCP_CORPUS` | empty | Colon-separated paths to reference Aiken codebases |
+| `AIKEN_MCP_DOCS_BASE_URL` | `https://aiken-lang.org` | Override docs source |
+| `AIKEN_MCP_DOCS_CACHE` | `~/Library/Caches/aiken-mcp/docs` (macOS), `$XDG_CACHE_HOME/aiken-mcp/docs` (Linux) | Docs disk cache |
+| `AIKEN_MCP_LOG` | `info` | `tracing-subscriber` filter |
 
-## Requirements
+## Architecture
 
-- Rust 1.75+
-- Aiken CLI on PATH (`aikup install` or equivalent)
-- `rg` (ripgrep) on PATH if `aiken_pattern_search` is used
+Workspace of 9 crates, ports-and-adapters layout. `core` defines traits, side-effect crates implement them, `server` wires everything behind an rmcp stdio transport.
+
+```
+crates/
+├── core/        traits + domain types (no I/O)
+├── cli/         AikenRunner over the `aiken` subprocess
+├── corpus/      CorpusSearch over ripgrep
+├── docs/        DocsFetcher over reqwest + on-disk cache
+├── lsp/         LspClient over `aiken lsp --stdio`
+├── symbols/     SymbolIndex by walking .ak files
+├── blueprint/   BlueprintReader for plutus.json
+├── tools/       handler functions over the core traits
+└── server/      bin. rmcp stdio. Wires deps + registers tools.
+```
+
+Adding a new tool: write a handler in `tools/`, register a `#[tool]` method in `server/src/server.rs`. No churn elsewhere unless a new trait is needed.
 
 ## Development
 
