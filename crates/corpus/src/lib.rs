@@ -7,7 +7,7 @@
 //! v0 is intentionally simple: ripgrep over `.ak` files, return the first N
 //! matches. v1 may swap in a precomputed index (tantivy or symbol graph).
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Stdio;
 
 use async_trait::async_trait;
@@ -94,7 +94,7 @@ impl CorpusSearch for RipgrepCorpus {
     }
 }
 
-fn parse_rg_line(line: &str, root: &PathBuf) -> Option<CorpusHit> {
+fn parse_rg_line(line: &str, root: &Path) -> Option<CorpusHit> {
     // Format: <path>:<line>:<text>
     let mut parts = line.splitn(3, ':');
     let file = parts.next()?;
