@@ -42,11 +42,7 @@ pub async fn handle_budget(
     let project = Project::new(root.clone());
     let outcome = runner.test(&project, req.filter.as_deref()).await?;
 
-    let entries = outcome
-        .tests
-        .iter()
-        .map(|t| build_entry(t))
-        .collect();
+    let entries = outcome.tests.iter().map(|t| build_entry(t)).collect();
 
     Ok(BudgetResponse {
         project_root: root.as_path().display().to_string(),

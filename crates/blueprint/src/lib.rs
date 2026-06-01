@@ -38,7 +38,8 @@ impl BlueprintReader for JsonBlueprintReader {
         })?;
 
         let raw: serde_json::Value = serde_json::from_str(&text).map_err(CoreError::Serde)?;
-        let parsed: BlueprintFile = serde_json::from_value(raw.clone()).map_err(CoreError::Serde)?;
+        let parsed: BlueprintFile =
+            serde_json::from_value(raw.clone()).map_err(CoreError::Serde)?;
 
         let validators = parsed
             .validators
@@ -46,10 +47,7 @@ impl BlueprintReader for JsonBlueprintReader {
             .map(|v| BlueprintValidator {
                 title: v.title,
                 hash: v.hash,
-                compiled_size_bytes: v
-                    .compiled_code
-                    .as_ref()
-                    .map(|hex| hex.len() / 2),
+                compiled_size_bytes: v.compiled_code.as_ref().map(|hex| hex.len() / 2),
                 parameters: v
                     .parameters
                     .unwrap_or_default()
@@ -60,7 +58,9 @@ impl BlueprintReader for JsonBlueprintReader {
                     })
                     .collect(),
                 datum: v.datum.map(|d| d.schema.unwrap_or(serde_json::Value::Null)),
-                redeemer: v.redeemer.map(|d| d.schema.unwrap_or(serde_json::Value::Null)),
+                redeemer: v
+                    .redeemer
+                    .map(|d| d.schema.unwrap_or(serde_json::Value::Null)),
             })
             .collect();
 

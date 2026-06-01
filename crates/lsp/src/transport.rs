@@ -116,18 +116,11 @@ impl LspTransport {
             return Err(CoreError::other(format!("lsp error: {err}")));
         }
 
-        let result_field = value
-            .get("result")
-            .cloned()
-            .unwrap_or(Value::Null);
+        let result_field = value.get("result").cloned().unwrap_or(Value::Null);
         serde_json::from_value::<R::Result>(result_field).map_err(CoreError::Serde)
     }
 
-    pub(crate) async fn notify<P: Serialize>(
-        &self,
-        method: &str,
-        params: P,
-    ) -> CoreResult<()> {
+    pub(crate) async fn notify<P: Serialize>(&self, method: &str, params: P) -> CoreResult<()> {
         let payload = serde_json::json!({
             "jsonrpc": "2.0",
             "method": method,
@@ -137,10 +130,7 @@ impl LspTransport {
     }
 }
 
-async fn write_message(
-    stdin: &Arc<Mutex<ChildStdin>>,
-    payload: &Value,
-) -> CoreResult<()> {
+async fn write_message(stdin: &Arc<Mutex<ChildStdin>>, payload: &Value) -> CoreResult<()> {
     let body = serde_json::to_vec(payload).map_err(CoreError::Serde)?;
     let mut guard = stdin.lock().await;
     let header = format!("Content-Length: {}\r\n\r\n", body.len());
@@ -193,7 +183,10 @@ async fn read_message<R: tokio::io::AsyncRead + Unpin>(
     let mut header_line = String::new();
     loop {
         header_line.clear();
-        let n = reader.read_line(&mut header_line).await.map_err(CoreError::Io)?;
+        let n = reader
+            .read_line(&mut header_line)
+            .await
+            .map_err(CoreError::Io)?;
         if n == 0 {
             return Ok(None);
         }
@@ -208,9 +201,6 @@ async fn read_message<R: tokio::io::AsyncRead + Unpin>(
 
     let len = content_length.ok_or_else(|| CoreError::other("missing Content-Length header"))?;
     let mut buf = vec![0u8; len];
-    reader
-        .read_exact(&mut buf)
-        .await
-        .map_err(CoreError::Io)?;
+    reader.read_exact(&mut buf).await.map_err(CoreError::Io)?;
     Ok(Some(buf))
 }

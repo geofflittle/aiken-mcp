@@ -33,16 +33,7 @@ pub struct Location {
 #[async_trait]
 pub trait LspClient: Send + Sync {
     async fn hover(&self, file: &Path, line: u32, column: u32) -> CoreResult<Option<Hover>>;
-    async fn completions(
-        &self,
-        file: &Path,
-        line: u32,
-        column: u32,
-    ) -> CoreResult<Vec<Completion>>;
-    async fn definition(
-        &self,
-        file: &Path,
-        line: u32,
-        column: u32,
-    ) -> CoreResult<Vec<Location>>;
+    async fn completions(&self, file: &Path, line: u32, column: u32)
+        -> CoreResult<Vec<Completion>>;
+    async fn definition(&self, file: &Path, line: u32, column: u32) -> CoreResult<Vec<Location>>;
 }

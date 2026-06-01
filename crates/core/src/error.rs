@@ -11,7 +11,10 @@ pub enum CoreError {
     AikenNotInstalled,
 
     #[error("aiken process failed (exit {exit_code:?}): {stderr}")]
-    AikenProcessFailed { exit_code: Option<i32>, stderr: String },
+    AikenProcessFailed {
+        exit_code: Option<i32>,
+        stderr: String,
+    },
 
     #[error("could not parse aiken output as expected: {context}")]
     OutputParseFailed { context: String },

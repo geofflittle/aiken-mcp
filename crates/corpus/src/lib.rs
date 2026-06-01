@@ -14,7 +14,7 @@ use async_trait::async_trait;
 use tokio::process::Command;
 use tracing::debug;
 
-use aiken_mcp_core::{CorpusHit, CorpusSearch, CoreError, CoreResult};
+use aiken_mcp_core::{CoreError, CoreResult, CorpusHit, CorpusSearch};
 
 #[derive(Debug, Clone)]
 pub struct RipgrepCorpus {

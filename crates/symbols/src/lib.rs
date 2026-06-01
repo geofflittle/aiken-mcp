@@ -208,7 +208,10 @@ impl ParseRegexes {
         } else if let Some(c) = self.pub_const.captures(line) {
             (c.get(1).unwrap().as_str().to_string(), SymbolKind::Const)
         } else if let Some(c) = self.validator.captures(line) {
-            (c.get(1).unwrap().as_str().to_string(), SymbolKind::Validator)
+            (
+                c.get(1).unwrap().as_str().to_string(),
+                SymbolKind::Validator,
+            )
         } else {
             return None;
         };
@@ -272,60 +275,47 @@ mod tests {
 
     #[test]
     fn captures_single_line_doc() {
-        let symbols = extract_from(
-            "/// Add two ints.\npub fn add(a: Int, b: Int) -> Int { a + b }\n",
-        );
+        let symbols =
+            extract_from("/// Add two ints.\npub fn add(a: Int, b: Int) -> Int { a + b }\n");
         assert_eq!(symbols.len(), 1);
         assert_eq!(symbols[0].doc.as_deref(), Some("Add two ints."));
     }
 
     #[test]
     fn captures_multi_line_doc() {
-        let symbols = extract_from(
-            "/// First line.\n/// Second line.\npub fn add() {}\n",
-        );
+        let symbols = extract_from("/// First line.\n/// Second line.\npub fn add() {}\n");
         assert_eq!(symbols[0].doc.as_deref(), Some("First line.\nSecond line."));
     }
 
     #[test]
     fn blank_line_resets_doc() {
-        let symbols = extract_from(
-            "/// Stale doc.\n\npub fn add() {}\n",
-        );
+        let symbols = extract_from("/// Stale doc.\n\npub fn add() {}\n");
         assert!(symbols[0].doc.is_none());
     }
 
     #[test]
     fn non_decl_line_resets_doc() {
-        let symbols = extract_from(
-            "/// Stale doc.\nlet x = 1\npub fn add() {}\n",
-        );
+        let symbols = extract_from("/// Stale doc.\nlet x = 1\npub fn add() {}\n");
         assert!(symbols[0].doc.is_none());
     }
 
     #[test]
     fn ignores_module_docs() {
-        let symbols = extract_from(
-            "//// Module-level doc.\npub fn add() {}\n",
-        );
+        let symbols = extract_from("//// Module-level doc.\npub fn add() {}\n");
         // Module doc shouldn't attach to add.
         assert!(symbols[0].doc.is_none());
     }
 
     #[test]
     fn captures_validator_with_doc() {
-        let symbols = extract_from(
-            "/// Bridge validator.\nvalidator bridge { ... }\n",
-        );
+        let symbols = extract_from("/// Bridge validator.\nvalidator bridge { ... }\n");
         assert_eq!(symbols[0].kind, SymbolKind::Validator);
         assert_eq!(symbols[0].doc.as_deref(), Some("Bridge validator."));
     }
 
     #[test]
     fn handles_consecutive_decls() {
-        let symbols = extract_from(
-            "/// First.\npub fn one() {}\n/// Second.\npub fn two() {}\n",
-        );
+        let symbols = extract_from("/// First.\npub fn one() {}\n/// Second.\npub fn two() {}\n");
         assert_eq!(symbols.len(), 2);
         assert_eq!(symbols[0].doc.as_deref(), Some("First."));
         assert_eq!(symbols[1].doc.as_deref(), Some("Second."));

@@ -1,5 +1,5 @@
-use std::path::{Path, PathBuf};
 use crate::error::{CoreError, CoreResult};
+use std::path::{Path, PathBuf};
 
 /// Resolved root of an aiken project (directory containing aiken.toml).
 #[derive(Debug, Clone, PartialEq, Eq)]

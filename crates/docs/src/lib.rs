@@ -53,7 +53,11 @@ impl HttpDocsFetcher {
 #[async_trait]
 impl DocsFetcher for HttpDocsFetcher {
     async fn fetch(&self, path: &str) -> CoreResult<String> {
-        let url = format!("{}/{}", self.base_url.trim_end_matches('/'), path.trim_start_matches('/'));
+        let url = format!(
+            "{}/{}",
+            self.base_url.trim_end_matches('/'),
+            path.trim_start_matches('/')
+        );
 
         if let Ok(true) = fs::try_exists(&self.cache_dir).await {
             // OK

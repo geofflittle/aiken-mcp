@@ -136,7 +136,10 @@ pub struct CorpusListArgs {
 
 impl From<CheckArgs> for tools::CheckRequest {
     fn from(a: CheckArgs) -> Self {
-        Self { path: a.path, module: a.module }
+        Self {
+            path: a.path,
+            module: a.module,
+        }
     }
 }
 impl From<BuildArgs> for tools::BuildRequest {
@@ -146,7 +149,10 @@ impl From<BuildArgs> for tools::BuildRequest {
 }
 impl From<TestArgs> for tools::TestRequest {
     fn from(a: TestArgs) -> Self {
-        Self { path: a.path, filter: a.filter }
+        Self {
+            path: a.path,
+            filter: a.filter,
+        }
     }
 }
 impl From<FmtArgs> for tools::FmtRequest {
@@ -156,7 +162,10 @@ impl From<FmtArgs> for tools::FmtRequest {
 }
 impl From<SearchArgs> for tools::SearchRequest {
     fn from(a: SearchArgs) -> Self {
-        Self { query: a.query, max_hits: a.max_hits }
+        Self {
+            query: a.query,
+            max_hits: a.max_hits,
+        }
     }
 }
 impl From<DocsArgs> for tools::DocsLookupRequest {
@@ -166,27 +175,45 @@ impl From<DocsArgs> for tools::DocsLookupRequest {
 }
 impl From<PositionArgs> for tools::HoverRequest {
     fn from(a: PositionArgs) -> Self {
-        Self { file: a.file, line: a.line, column: a.column }
+        Self {
+            file: a.file,
+            line: a.line,
+            column: a.column,
+        }
     }
 }
 impl From<PositionArgs> for tools::CompletionsRequest {
     fn from(a: PositionArgs) -> Self {
-        Self { file: a.file, line: a.line, column: a.column }
+        Self {
+            file: a.file,
+            line: a.line,
+            column: a.column,
+        }
     }
 }
 impl From<PositionArgs> for tools::DefinitionRequest {
     fn from(a: PositionArgs) -> Self {
-        Self { file: a.file, line: a.line, column: a.column }
+        Self {
+            file: a.file,
+            line: a.line,
+            column: a.column,
+        }
     }
 }
 impl From<BudgetArgs> for tools::BudgetRequest {
     fn from(a: BudgetArgs) -> Self {
-        Self { path: a.path, filter: a.filter }
+        Self {
+            path: a.path,
+            filter: a.filter,
+        }
     }
 }
 impl From<SymbolLookupArgs> for tools::SymbolLookupRequest {
     fn from(a: SymbolLookupArgs) -> Self {
-        Self { query: a.query, max_hits: a.max_hits }
+        Self {
+            query: a.query,
+            max_hits: a.max_hits,
+        }
     }
 }
 impl From<BlueprintArgs> for tools::BlueprintRequest {
@@ -196,12 +223,18 @@ impl From<BlueprintArgs> for tools::BlueprintRequest {
 }
 impl From<UplcArgs> for tools::UplcRequest {
     fn from(a: UplcArgs) -> Self {
-        Self { path: a.path, target: a.target }
+        Self {
+            path: a.path,
+            target: a.target,
+        }
     }
 }
 impl From<NewProjectArgs> for tools::NewProjectRequest {
     fn from(a: NewProjectArgs) -> Self {
-        Self { parent_dir: a.parent_dir, name: a.name }
+        Self {
+            parent_dir: a.parent_dir,
+            name: a.name,
+        }
     }
 }
 impl From<ExplainArgs> for tools::ExplainRequest {
@@ -224,33 +257,63 @@ impl AikenMcpServer {
         }
     }
 
-    #[tool(description = "Run `aiken check` on the project containing the given path. Returns diagnostics + raw stdout/stderr.")]
-    async fn aiken_check(&self, Parameters(args): Parameters<CheckArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "Run `aiken check` on the project containing the given path. Returns diagnostics + raw stdout/stderr."
+    )]
+    async fn aiken_check(
+        &self,
+        Parameters(args): Parameters<CheckArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_check(self.deps.runner.clone(), args.into()).await)
     }
 
-    #[tool(description = "Run `aiken build` on the project. Returns diagnostics + listed artifacts.")]
-    async fn aiken_build(&self, Parameters(args): Parameters<BuildArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "Run `aiken build` on the project. Returns diagnostics + listed artifacts."
+    )]
+    async fn aiken_build(
+        &self,
+        Parameters(args): Parameters<BuildArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_build(self.deps.runner.clone(), args.into()).await)
     }
 
-    #[tool(description = "Run aiken tests via `aiken check`. Returns per-test pass/fail results with mem/cpu when available.")]
-    async fn aiken_test(&self, Parameters(args): Parameters<TestArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "Run aiken tests via `aiken check`. Returns per-test pass/fail results with mem/cpu when available."
+    )]
+    async fn aiken_test(
+        &self,
+        Parameters(args): Parameters<TestArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_test(self.deps.runner.clone(), args.into()).await)
     }
 
-    #[tool(description = "Format Aiken source via `aiken fmt --stdin`. Returns formatted source on success.")]
-    async fn aiken_fmt(&self, Parameters(args): Parameters<FmtArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "Format Aiken source via `aiken fmt --stdin`. Returns formatted source on success."
+    )]
+    async fn aiken_fmt(
+        &self,
+        Parameters(args): Parameters<FmtArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_fmt(self.deps.runner.clone(), args.into()).await)
     }
 
-    #[tool(description = "Ripgrep over user-supplied reference Aiken codebases (set via AIKEN_MCP_CORPUS).")]
-    async fn aiken_pattern_search(&self, Parameters(args): Parameters<SearchArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "Ripgrep over user-supplied reference Aiken codebases (set via AIKEN_MCP_CORPUS)."
+    )]
+    async fn aiken_pattern_search(
+        &self,
+        Parameters(args): Parameters<SearchArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_search(self.deps.corpus.clone(), args.into()).await)
     }
 
-    #[tool(description = "Fetch a page from the Aiken docs site (default https://aiken-lang.org), with on-disk cache.")]
-    async fn aiken_docs(&self, Parameters(args): Parameters<DocsArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "Fetch a page from the Aiken docs site (default https://aiken-lang.org), with on-disk cache."
+    )]
+    async fn aiken_docs(
+        &self,
+        Parameters(args): Parameters<DocsArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_docs_lookup(self.deps.docs.clone(), args.into()).await)
     }
 
@@ -259,53 +322,93 @@ impl AikenMcpServer {
         json_call(tools::handle_version(self.deps.runner.clone()).await)
     }
 
-    #[tool(description = "LSP hover at file/line/column. Returns markdown when available. (line/column are zero-based.)")]
-    async fn aiken_hover(&self, Parameters(args): Parameters<PositionArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "LSP hover at file/line/column. Returns markdown when available. (line/column are zero-based.)"
+    )]
+    async fn aiken_hover(
+        &self,
+        Parameters(args): Parameters<PositionArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_hover(self.deps.lsp.clone(), args.into()).await)
     }
 
     #[tool(description = "LSP completions at file/line/column.")]
-    async fn aiken_completions(&self, Parameters(args): Parameters<PositionArgs>) -> Result<CallToolResult, McpError> {
+    async fn aiken_completions(
+        &self,
+        Parameters(args): Parameters<PositionArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_completions(self.deps.lsp.clone(), args.into()).await)
     }
 
     #[tool(description = "LSP go-to-definition at file/line/column.")]
-    async fn aiken_definition(&self, Parameters(args): Parameters<PositionArgs>) -> Result<CallToolResult, McpError> {
+    async fn aiken_definition(
+        &self,
+        Parameters(args): Parameters<PositionArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_definition(self.deps.lsp.clone(), args.into()).await)
     }
 
-    #[tool(description = "Run aiken tests and report Plutus exec budget per test (mem, cpu, % of tx limit).")]
-    async fn aiken_budget(&self, Parameters(args): Parameters<BudgetArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "Run aiken tests and report Plutus exec budget per test (mem, cpu, % of tx limit)."
+    )]
+    async fn aiken_budget(
+        &self,
+        Parameters(args): Parameters<BudgetArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_budget(self.deps.runner.clone(), args.into()).await)
     }
 
-    #[tool(description = "Lookup pub fn / pub type / pub const / validator declarations across the configured Aiken corpus. Query matches symbol name OR doc-comment text, so search by topic (e.g. 'merkle proof') or by symbol name interchangeably. Each result includes the preceding `///` doc comment when present.")]
-    async fn aiken_symbol_lookup(&self, Parameters(args): Parameters<SymbolLookupArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "Lookup pub fn / pub type / pub const / validator declarations across the configured Aiken corpus. Query matches symbol name OR doc-comment text, so search by topic (e.g. 'merkle proof') or by symbol name interchangeably. Each result includes the preceding `///` doc comment when present."
+    )]
+    async fn aiken_symbol_lookup(
+        &self,
+        Parameters(args): Parameters<SymbolLookupArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_symbol_lookup(self.deps.symbols.clone(), args.into()).await)
     }
 
-    #[tool(description = "Parse `plutus.json` (CIP-57 blueprint) from the project. Returns validators, hashes, parameter schemas, compiled-script size.")]
-    async fn aiken_blueprint(&self, Parameters(args): Parameters<BlueprintArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "Parse `plutus.json` (CIP-57 blueprint) from the project. Returns validators, hashes, parameter schemas, compiled-script size."
+    )]
+    async fn aiken_blueprint(
+        &self,
+        Parameters(args): Parameters<BlueprintArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_blueprint(self.deps.blueprint.clone(), args.into()).await)
     }
 
     #[tool(description = "Decode a UPLC artifact via `aiken uplc decode`.")]
-    async fn aiken_uplc(&self, Parameters(args): Parameters<UplcArgs>) -> Result<CallToolResult, McpError> {
+    async fn aiken_uplc(
+        &self,
+        Parameters(args): Parameters<UplcArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_uplc(self.deps.runner.clone(), args.into()).await)
     }
 
     #[tool(description = "Scaffold a new Aiken project via `aiken new`.")]
-    async fn aiken_new(&self, Parameters(args): Parameters<NewProjectArgs>) -> Result<CallToolResult, McpError> {
+    async fn aiken_new(
+        &self,
+        Parameters(args): Parameters<NewProjectArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_new_project(self.deps.runner.clone(), args.into()).await)
     }
 
     #[tool(description = "Look up a canonical explanation + fix for a common Aiken error string.")]
-    async fn aiken_explain(&self, Parameters(args): Parameters<ExplainArgs>) -> Result<CallToolResult, McpError> {
+    async fn aiken_explain(
+        &self,
+        Parameters(args): Parameters<ExplainArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_explain(args.into()).await)
     }
 
-    #[tool(description = "List curated high-expertise Aiken codebases. Optional tag filter (e.g. `dex`, `bridge`, `merkle`, `patterns`). Returns repo url + author + tags + study notes.")]
-    async fn aiken_corpus_list(&self, Parameters(args): Parameters<CorpusListArgs>) -> Result<CallToolResult, McpError> {
+    #[tool(
+        description = "List curated high-expertise Aiken codebases. Optional tag filter (e.g. `dex`, `bridge`, `merkle`, `patterns`). Returns repo url + author + tags + study notes."
+    )]
+    async fn aiken_corpus_list(
+        &self,
+        Parameters(args): Parameters<CorpusListArgs>,
+    ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_corpus_list(args.into()).await)
     }
 }

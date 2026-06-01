@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
-use aiken_mcp_core::{CorpusHit, CorpusSearch, CoreResult};
+use aiken_mcp_core::{CoreResult, CorpusHit, CorpusSearch};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SearchRequest {

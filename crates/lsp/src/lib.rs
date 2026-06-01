@@ -15,18 +15,18 @@
 mod transport;
 
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
 use lsp_types::request::{Completion, GotoDefinition, HoverRequest, Initialize};
 use lsp_types::{
-    ClientCapabilities, CompletionContext, CompletionItem, CompletionParams,
-    CompletionResponse, CompletionTriggerKind, DidOpenTextDocumentParams, GotoDefinitionParams,
-    GotoDefinitionResponse, HoverContents, HoverParams, InitializeParams, InitializeResult,
-    InitializedParams, MarkupContent, PartialResultParams, Position, TextDocumentIdentifier,
-    TextDocumentItem, TextDocumentPositionParams, Uri, WorkDoneProgressParams,
+    ClientCapabilities, CompletionContext, CompletionItem, CompletionParams, CompletionResponse,
+    CompletionTriggerKind, DidOpenTextDocumentParams, GotoDefinitionParams, GotoDefinitionResponse,
+    HoverContents, HoverParams, InitializeParams, InitializeResult, InitializedParams,
+    MarkupContent, PartialResultParams, Position, TextDocumentIdentifier, TextDocumentItem,
+    TextDocumentPositionParams, Uri, WorkDoneProgressParams,
 };
 use std::str::FromStr;
 use tokio::sync::Mutex;
@@ -85,7 +85,9 @@ impl AikenLspClient {
             let _: InitializeResult = transport
                 .request::<Initialize>(id, params, Duration::from_secs(15))
                 .await?;
-            transport.notify("initialized", InitializedParams {}).await?;
+            transport
+                .notify("initialized", InitializedParams {})
+                .await?;
             self.initialized.store(true, Ordering::Release);
         }
 
@@ -94,7 +96,9 @@ impl AikenLspClient {
 
     async fn ensure_doc_open(&self, transport: &LspTransport, file: &Path) -> CoreResult<()> {
         let uri = file_url(file)?;
-        let text = tokio::fs::read_to_string(file).await.map_err(CoreError::Io)?;
+        let text = tokio::fs::read_to_string(file)
+            .await
+            .map_err(CoreError::Io)?;
         let params = DidOpenTextDocumentParams {
             text_document: TextDocumentItem {
                 uri,
@@ -103,9 +107,7 @@ impl AikenLspClient {
                 text,
             },
         };
-        transport
-            .notify("textDocument/didOpen", params)
-            .await
+        transport.notify("textDocument/didOpen", params).await
     }
 }
 
@@ -117,12 +119,7 @@ impl Default for AikenLspClient {
 
 #[async_trait]
 impl LspClient for AikenLspClient {
-    async fn hover(
-        &self,
-        file: &Path,
-        line: u32,
-        column: u32,
-    ) -> CoreResult<Option<CoreHover>> {
+    async fn hover(&self, file: &Path, line: u32, column: u32) -> CoreResult<Option<CoreHover>> {
         let transport = self.ensure_started().await?;
         self.ensure_doc_open(&transport, file).await?;
 
@@ -130,7 +127,10 @@ impl LspClient for AikenLspClient {
         let params = HoverParams {
             text_document_position_params: TextDocumentPositionParams {
                 text_document: TextDocumentIdentifier { uri },
-                position: Position { line, character: column },
+                position: Position {
+                    line,
+                    character: column,
+                },
             },
             work_done_progress_params: WorkDoneProgressParams::default(),
         };
@@ -157,7 +157,10 @@ impl LspClient for AikenLspClient {
         let params = CompletionParams {
             text_document_position: TextDocumentPositionParams {
                 text_document: TextDocumentIdentifier { uri },
-                position: Position { line, character: column },
+                position: Position {
+                    line,
+                    character: column,
+                },
             },
             work_done_progress_params: WorkDoneProgressParams::default(),
             partial_result_params: PartialResultParams::default(),
@@ -186,12 +189,7 @@ impl LspClient for AikenLspClient {
             .collect())
     }
 
-    async fn definition(
-        &self,
-        file: &Path,
-        line: u32,
-        column: u32,
-    ) -> CoreResult<Vec<CoreLoc>> {
+    async fn definition(&self, file: &Path, line: u32, column: u32) -> CoreResult<Vec<CoreLoc>> {
         let transport = self.ensure_started().await?;
         self.ensure_doc_open(&transport, file).await?;
 
@@ -199,7 +197,10 @@ impl LspClient for AikenLspClient {
         let params = GotoDefinitionParams {
             text_document_position_params: TextDocumentPositionParams {
                 text_document: TextDocumentIdentifier { uri },
-                position: Position { line, character: column },
+                position: Position {
+                    line,
+                    character: column,
+                },
             },
             work_done_progress_params: WorkDoneProgressParams::default(),
             partial_result_params: PartialResultParams::default(),
@@ -256,7 +257,9 @@ fn hover_to_markdown(contents: &HoverContents) -> String {
         HoverContents::Markup(MarkupContent { value, .. }) => value.clone(),
         HoverContents::Scalar(s) => match s {
             lsp_types::MarkedString::String(v) => v.clone(),
-            lsp_types::MarkedString::LanguageString(ls) => format!("```{}\n{}\n```", ls.language, ls.value),
+            lsp_types::MarkedString::LanguageString(ls) => {
+                format!("```{}\n{}\n```", ls.language, ls.value)
+            }
         },
         HoverContents::Array(arr) => arr
             .iter()

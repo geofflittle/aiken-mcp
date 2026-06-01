@@ -8,8 +8,8 @@ use tokio::process::Command;
 use tracing::debug;
 
 use aiken_mcp_core::{
-    AikenRunner, BuildOutcome, CheckOutcome, CoreError, CoreResult, FmtOutcome,
-    NewProjectOutcome, Project, TestOutcome, UplcOutcome,
+    AikenRunner, BuildOutcome, CheckOutcome, CoreError, CoreResult, FmtOutcome, NewProjectOutcome,
+    Project, TestOutcome, UplcOutcome,
 };
 
 use crate::parse;
@@ -190,9 +190,7 @@ impl AikenRunner for AikenCliRunner {
     }
 
     async fn uplc_decode(&self, project: &Project, target: &str) -> CoreResult<UplcOutcome> {
-        let raw = self
-            .run(Some(project), ["uplc", "decode", target])
-            .await?;
+        let raw = self.run(Some(project), ["uplc", "decode", target]).await?;
         Ok(UplcOutcome {
             success: raw.success,
             uplc: raw.stdout,
@@ -200,11 +198,7 @@ impl AikenRunner for AikenCliRunner {
         })
     }
 
-    async fn new_project(
-        &self,
-        parent_dir: &str,
-        name: &str,
-    ) -> CoreResult<NewProjectOutcome> {
+    async fn new_project(&self, parent_dir: &str, name: &str) -> CoreResult<NewProjectOutcome> {
         let raw = self.run_in_dir(parent_dir, ["new", name]).await?;
         let created_path = if raw.success {
             Some(format!("{}/{}", parent_dir.trim_end_matches('/'), name))

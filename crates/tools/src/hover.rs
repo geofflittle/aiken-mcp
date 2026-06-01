@@ -17,10 +17,7 @@ pub struct HoverResponse {
     pub hover: Option<Hover>,
 }
 
-pub async fn handle_hover(
-    lsp: Arc<dyn LspClient>,
-    req: HoverRequest,
-) -> CoreResult<HoverResponse> {
+pub async fn handle_hover(lsp: Arc<dyn LspClient>, req: HoverRequest) -> CoreResult<HoverResponse> {
     let path = PathBuf::from(req.file);
     let hover = lsp.hover(&path, req.line, req.column).await?;
     Ok(HoverResponse { hover })

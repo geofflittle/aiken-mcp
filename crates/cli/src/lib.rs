@@ -8,5 +8,5 @@
 mod parse;
 mod process;
 
-pub use process::AikenCliRunner;
 pub use parse::{parse_check, parse_test};
+pub use process::AikenCliRunner;
