@@ -34,7 +34,7 @@ fix = "Extract shared types/functions to a third module both can depend on. Or i
 pattern = "exceeds maximum execution units"
 title = "Plutus exec budget exceeded"
 explanation = "Your validator or test exceeded the per-transaction Plutus execution budget (default ~14M mem / ~10B cpu units on mainnet)."
-fix = "Use `aiken_budget` to see per-test mem/cpu. Profile expensive recursion. Consider: reference-input pre-verified state, smaller proof depths, batched hashing, splitting validator across multiple txs."
+fix = "Use `aiken_check` to see per-test mem/cpu (% of tx limit included). Profile expensive recursion. Consider: reference-input pre-verified state, smaller proof depths, batched hashing, splitting validator across multiple txs."
 
 [[entries]]
 pattern = "Compact path is too long"

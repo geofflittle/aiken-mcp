@@ -6,7 +6,7 @@ An MCP server that gives LLM coding assistants (Claude Code, Cursor, etc.) hands
 
 | Capability | Tools |
 |---|---|
-| Compile + test | `aiken_check`, `aiken_build`, `aiken_test`, `aiken_budget` |
+| Compile + test + budget | `aiken_check` (diagnostics, per-test pass/fail, mem/cpu, % of tx limit, `clean: true` for stale-cache retry), `aiken_build` |
 | Format + scaffold | `aiken_fmt`, `aiken_new` |
 | Type-aware queries (LSP) | `aiken_hover`, `aiken_completions`, `aiken_definition` |
 | Inspect artifacts | `aiken_blueprint` (CIP-57 plutus.json), `aiken_uplc` |
@@ -15,6 +15,8 @@ An MCP server that gives LLM coding assistants (Claude Code, Cursor, etc.) hands
 | Meta | `aiken_version` |
 
 The corpus tools index curated high-quality Aiken codebases (aiken-lang/stdlib, microproofs, Anastasia Labs, SundaeSwap, Spectrum, etc.) so the LLM can find idiomatic patterns by name or doc text.
+
+Recommended loop after every edit: `aiken_check` + `aiken_fmt`. Before referencing a symbol from another module or stdlib: `aiken_symbol_lookup`.
 
 ## Quick start
 
