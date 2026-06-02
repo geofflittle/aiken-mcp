@@ -377,16 +377,21 @@ impl ServerHandler for AikenMcpServer {
         .with_server_info(Implementation::from_build_env())
         .with_protocol_version(ProtocolVersion::V_2024_11_05)
         .with_instructions(
-            "Aiken tooling: aiken_check / aiken_build / aiken_fmt / aiken_uplc / aiken_new wrap the Aiken CLI. \
-             aiken_check now returns tests + per-test exec budget (mem/cpu and % of tx limit) alongside diagnostics. \
-             aiken_hover / aiken_completions / aiken_definition use `aiken lsp --stdio` for type-aware queries. \
-             aiken_pattern_search greps user-supplied reference Aiken codebases (AIKEN_MCP_CORPUS). \
-             aiken_symbol_lookup indexes pub fn/type/const/validator declarations + their doc comments across the corpus. \
-             aiken_corpus_list returns the curated repo manifest. \
-             aiken_blueprint parses plutus.json (CIP-57). \
-             aiken_docs fetches pages from aiken-lang.org with caching. \
-             aiken_explain looks up canonical fixes for common Aiken error strings. \
-             aiken_version reports the local CLI version.".to_string(),
+            "Aiken MCP tools. Recommended workflow:\n\
+             \n\
+             - After every edit to an .ak file: aiken_check (compile + tests + per-test exec budget in one call) + aiken_fmt (format the source you just wrote).\n\
+             - If aiken_check reports `success: false` with empty diagnostics, retry with `clean: true` to wipe the build cache.\n\
+             - Before referencing a symbol from another module or a stdlib: aiken_symbol_lookup. Query by name OR by topic (e.g. 'merkle proof'); matches the symbol's doc comment too.\n\
+             - To learn idiomatic patterns from real codebases: aiken_pattern_search (ripgrep over AIKEN_MCP_CORPUS) and aiken_corpus_list (curated repo manifest with tags).\n\
+             - At integration time: aiken_build + aiken_blueprint (parse plutus.json, CIP-57).\n\
+             \n\
+             Less common:\n\
+             - aiken_hover / aiken_completions / aiken_definition: LSP queries for interactive coding (file/line/column, zero-based).\n\
+             - aiken_uplc: decode compiled UPLC artifacts.\n\
+             - aiken_new: scaffold a fresh project.\n\
+             - aiken_docs: fetch a page from aiken-lang.org (cached).\n\
+             - aiken_explain: look up canonical fix for a known error string.\n\
+             - aiken_version: report the installed Aiken CLI version (use when debugging tool-vs-CLI mismatch).".to_string(),
         )
     }
 }
