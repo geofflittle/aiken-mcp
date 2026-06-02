@@ -57,13 +57,6 @@ pub struct BuildArgs {
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
-pub struct TestArgs {
-    pub path: String,
-    #[serde(default)]
-    pub filter: Option<String>,
-}
-
-#[derive(Debug, Deserialize, JsonSchema)]
 pub struct FmtArgs {
     pub source: String,
 }
@@ -92,13 +85,6 @@ pub struct PositionArgs {
     pub line: u32,
     /// Zero-based UTF-16 column.
     pub column: u32,
-}
-
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct BudgetArgs {
-    pub path: String,
-    #[serde(default)]
-    pub filter: Option<String>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -152,14 +138,6 @@ impl From<BuildArgs> for tools::BuildRequest {
         Self { path: a.path }
     }
 }
-impl From<TestArgs> for tools::TestRequest {
-    fn from(a: TestArgs) -> Self {
-        Self {
-            path: a.path,
-            filter: a.filter,
-        }
-    }
-}
 impl From<FmtArgs> for tools::FmtRequest {
     fn from(a: FmtArgs) -> Self {
         Self { source: a.source }
@@ -202,14 +180,6 @@ impl From<PositionArgs> for tools::DefinitionRequest {
             file: a.file,
             line: a.line,
             column: a.column,
-        }
-    }
-}
-impl From<BudgetArgs> for tools::BudgetRequest {
-    fn from(a: BudgetArgs) -> Self {
-        Self {
-            path: a.path,
-            filter: a.filter,
         }
     }
 }
@@ -283,16 +253,6 @@ impl AikenMcpServer {
     }
 
     #[tool(
-        description = "Run aiken tests via `aiken check`. Returns per-test pass/fail results with mem/cpu when available."
-    )]
-    async fn aiken_test(
-        &self,
-        Parameters(args): Parameters<TestArgs>,
-    ) -> Result<CallToolResult, McpError> {
-        json_call(tools::handle_test(self.deps.runner.clone(), args.into()).await)
-    }
-
-    #[tool(
         description = "Format Aiken source via `aiken fmt --stdin`. Returns formatted source on success."
     )]
     async fn aiken_fmt(
@@ -351,16 +311,6 @@ impl AikenMcpServer {
         Parameters(args): Parameters<PositionArgs>,
     ) -> Result<CallToolResult, McpError> {
         json_call(tools::handle_definition(self.deps.lsp.clone(), args.into()).await)
-    }
-
-    #[tool(
-        description = "Run aiken tests and report Plutus exec budget per test (mem, cpu, % of tx limit)."
-    )]
-    async fn aiken_budget(
-        &self,
-        Parameters(args): Parameters<BudgetArgs>,
-    ) -> Result<CallToolResult, McpError> {
-        json_call(tools::handle_budget(self.deps.runner.clone(), args.into()).await)
     }
 
     #[tool(
@@ -427,7 +377,8 @@ impl ServerHandler for AikenMcpServer {
         .with_server_info(Implementation::from_build_env())
         .with_protocol_version(ProtocolVersion::V_2024_11_05)
         .with_instructions(
-            "Aiken tooling: aiken_check / aiken_build / aiken_test / aiken_fmt / aiken_budget / aiken_uplc / aiken_new wrap the Aiken CLI. \
+            "Aiken tooling: aiken_check / aiken_build / aiken_fmt / aiken_uplc / aiken_new wrap the Aiken CLI. \
+             aiken_check now returns tests + per-test exec budget (mem/cpu and % of tx limit) alongside diagnostics. \
              aiken_hover / aiken_completions / aiken_definition use `aiken lsp --stdio` for type-aware queries. \
              aiken_pattern_search greps user-supplied reference Aiken codebases (AIKEN_MCP_CORPUS). \
              aiken_symbol_lookup indexes pub fn/type/const/validator declarations + their doc comments across the corpus. \

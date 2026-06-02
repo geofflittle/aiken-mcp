@@ -9,7 +9,7 @@ use tracing::debug;
 
 use aiken_mcp_core::{
     AikenRunner, BuildOutcome, CheckOutcome, CoreError, CoreResult, FmtOutcome, NewProjectOutcome,
-    Project, TestOutcome, UplcOutcome,
+    Project, UplcOutcome, TX_CPU_LIMIT, TX_MEM_LIMIT,
 };
 
 use crate::parse;
@@ -144,9 +144,13 @@ impl AikenRunner for AikenCliRunner {
         }
         let raw = self.run(Some(project), args).await?;
         let diagnostics = parse::parse_check(&raw.stdout, &raw.stderr);
+        let tests = parse::parse_test(&raw.stdout);
         Ok(CheckOutcome {
             success: raw.success,
             diagnostics,
+            tests,
+            tx_mem_limit: TX_MEM_LIMIT,
+            tx_cpu_limit: TX_CPU_LIMIT,
             raw_stdout: raw.stdout,
             raw_stderr: raw.stderr,
         })
@@ -159,22 +163,6 @@ impl AikenRunner for AikenCliRunner {
             success: raw.success,
             diagnostics,
             artifacts: parse::parse_artifacts(&raw.stdout),
-            raw_stdout: raw.stdout,
-            raw_stderr: raw.stderr,
-        })
-    }
-
-    async fn test(&self, project: &Project, filter: Option<&str>) -> CoreResult<TestOutcome> {
-        let mut args = vec!["check".to_string()];
-        if let Some(f) = filter {
-            args.push("-m".to_string());
-            args.push(f.to_string());
-        }
-        let raw = self.run(Some(project), args).await?;
-        let tests = parse::parse_test(&raw.stdout);
-        Ok(TestOutcome {
-            success: raw.success,
-            tests,
             raw_stdout: raw.stdout,
             raw_stderr: raw.stderr,
         })

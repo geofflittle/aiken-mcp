@@ -16,7 +16,7 @@ pub use error::{CoreError, CoreResult};
 pub use lsp::{Completion, Hover, Location, LspClient};
 pub use project::{Project, ProjectRoot};
 pub use runner::{
-    AikenRunner, BuildOutcome, CheckOutcome, FmtOutcome, NewProjectOutcome, TestOutcome,
-    TestResult, UplcOutcome,
+    AikenRunner, BuildOutcome, CheckOutcome, FmtOutcome, NewProjectOutcome, TestResult,
+    UplcOutcome, TX_CPU_LIMIT, TX_MEM_LIMIT,
 };
 pub use symbols::{Symbol, SymbolIndex, SymbolKind};

@@ -11,7 +11,15 @@
 use serde::Deserialize;
 
 use aiken_mcp_core::diagnostic::{Diagnostic, Severity};
-use aiken_mcp_core::runner::TestResult;
+use aiken_mcp_core::runner::{TestResult, TX_CPU_LIMIT, TX_MEM_LIMIT};
+
+fn mem_pct(mem: Option<u64>) -> Option<f64> {
+    mem.map(|m| m as f64 / TX_MEM_LIMIT as f64 * 100.0)
+}
+
+fn cpu_pct(cpu: Option<u64>) -> Option<f64> {
+    cpu.map(|c| c as f64 / TX_CPU_LIMIT as f64 * 100.0)
+}
 
 /// Best-effort extraction of diagnostics from `aiken check` output.
 /// Scans stdout + stderr for lines that look like compiler diagnostics.
@@ -63,12 +71,16 @@ fn try_parse_test_json(stdout: &str) -> Option<Vec<TestResult>> {
     let modules = parsed.cmd_check.modules.unwrap_or_default();
     for module in modules {
         for test in module.test {
+            let mem = test.execution_units.as_ref().and_then(|u| u.mem);
+            let cpu = test.execution_units.as_ref().and_then(|u| u.cpu);
             out.push(TestResult {
                 name: format!("{}::{}", module.name, test.title),
                 passed: test.status.eq_ignore_ascii_case("pass")
                     || test.status.eq_ignore_ascii_case("passed"),
-                mem: test.execution_units.as_ref().and_then(|u| u.mem),
-                cpu: test.execution_units.as_ref().and_then(|u| u.cpu),
+                mem,
+                cpu,
+                mem_pct_of_tx_limit: mem_pct(mem),
+                cpu_pct_of_tx_limit: cpu_pct(cpu),
                 message: test.assertion,
             });
         }
@@ -86,6 +98,8 @@ fn parse_test_lines(stdout: &str) -> Vec<TestResult> {
                 passed: true,
                 mem: None,
                 cpu: None,
+                mem_pct_of_tx_limit: None,
+                cpu_pct_of_tx_limit: None,
                 message: None,
             });
         } else if let Some(name) = trimmed.strip_prefix("FAIL ") {
@@ -94,6 +108,8 @@ fn parse_test_lines(stdout: &str) -> Vec<TestResult> {
                 passed: false,
                 mem: None,
                 cpu: None,
+                mem_pct_of_tx_limit: None,
+                cpu_pct_of_tx_limit: None,
                 message: None,
             });
         }
