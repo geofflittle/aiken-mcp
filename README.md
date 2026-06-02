@@ -26,22 +26,22 @@ Recommended loop after every edit: `aiken_check` + `aiken_fmt`. Before referenci
 - [Aiken CLI](https://aiken-lang.org/installation-instructions) on PATH
 - [ripgrep](https://github.com/BurntSushi/ripgrep) on PATH (only needed for `aiken_pattern_search`)
 
-### 2. Build the server
+### 2. Install the server
 
 ```sh
 git clone https://github.com/geofflittle/aiken-mcp
 cd aiken-mcp
-cargo build --release
+cargo install --path crates/server
 ```
 
-Binary lands at `target/release/aiken-mcp`.
+Binary lands at `~/.cargo/bin/aiken-mcp` (already on PATH if you have a normal Rust setup). Re-run with `--force` to upgrade after pulling.
 
 ### 3. Register with your client
 
 **Claude Code (recommended):**
 
 ```sh
-claude mcp add -s user aiken $(pwd)/target/release/aiken-mcp
+claude mcp add -s user aiken aiken-mcp
 ```
 
 **Manual config** (any MCP client). Add to your client config:
@@ -50,7 +50,7 @@ claude mcp add -s user aiken $(pwd)/target/release/aiken-mcp
 {
   "mcpServers": {
     "aiken": {
-      "command": "/absolute/path/to/aiken-mcp/target/release/aiken-mcp",
+      "command": "aiken-mcp",
       "env": {
         "AIKEN_MCP_CORPUS": "/path/to/aiken-stdlib:/path/to/another-repo"
       }
@@ -58,6 +58,8 @@ claude mcp add -s user aiken $(pwd)/target/release/aiken-mcp
   }
 }
 ```
+
+If `~/.cargo/bin` is not on PATH for your client, use the absolute path `/Users/<you>/.cargo/bin/aiken-mcp`.
 
 ### 4. (Optional) Clone the curated corpus
 
