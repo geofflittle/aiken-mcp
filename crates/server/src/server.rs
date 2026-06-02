@@ -45,6 +45,10 @@ pub struct CheckArgs {
     pub path: String,
     #[serde(default)]
     pub module: Option<String>,
+    /// Delete `<project>/build` before running check. Retry with this set
+    /// when a prior check returned empty diagnostics but `success: false`.
+    #[serde(default)]
+    pub clean: bool,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -139,6 +143,7 @@ impl From<CheckArgs> for tools::CheckRequest {
         Self {
             path: a.path,
             module: a.module,
+            clean: a.clean,
         }
     }
 }
